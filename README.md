@@ -1,12 +1,38 @@
 # sinkedin: Where your L's are your W's
 
+- Decide tagline
+
+## Logo:
+
+S<strike>in</strike>kedIn . strike through the "in" will be accent color #e03131. Other text will be color: #d4d4d4 or either #e6edf3
+
+## Color Palette:
+- Accent Color: #e03131
+- Background Color: #0d1117
+- Background Secondary Color: #161b22
+- Color: #e6edf3
+- Color Secondary: #8b949e
+- Border Color: #30363d
+
+## Font:
+- Blink Mac System Font, sans-serif
+
+
+## Temporary Flow:
+1. Maybe a simple landing page?
+2. Signup with email/password or social login. (UI idea: Split screen in two parts. Right side: form, left side: logo and other stuffs or something. Also terms and conditions, privacy policy, etc. Left side also caution text about the nature of the platform, e.g., "This is a space for sharing your job market fails in a humorous way. Expect snark, memes, and a lot of roasting. If you can't handle that, this isn't the place for you.")
+3. Simple profile setup
+   1. Can opt for skip for now (This will set default profile)
+4. Or can start as anonymous user posting directly to the feed.
+
 ## V1 Launch Features:
 
 Launch Date: 15th August 2025
 
+- **Login/Signup**: Simple email/password or social login.
 - **Failure Posts**: Users share their job market fails in a humorous way.
 - **SinkedIn Badges**: Earn badges for various failures, displayed on profiles.
-- **Roast Reactions**: Snarky reactions to posts, like "Oof" or "Cringe."
+- **Roast Reactions**: Snarky reactions to posts, like "Oof" or "Cringe."s
 - **Anonymous Mode**: Post anonymously to share fails without professional repercussions.
 - **Profile Basics**: Simple profiles with usernames, bios, and a "Biggest L" section.
 

@@ -99,11 +99,7 @@ export default function SignupPage() {
 
             {/* Social Login Buttons */}
             <div className="space-y-3 mb-6">
-              <button className="w-full bg-gray-700 hover:bg-gray-600 border border-dark-border text-light py-3 px-4 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
-                <Twitter className="w-5 h-5 mr-2" />
-                Continue with Twitter
-              </button>
-              <button className="w-full bg-gray-700 hover:bg-gray-600 border border-dark-border text-light py-3 px-4 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+              <button className="w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors border hover:opacity-80 bg-dark border-dark-border text-light">
                 <Mail className="w-5 h-5 mr-2" />
                 Continue with Google
               </button>

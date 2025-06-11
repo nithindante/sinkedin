@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Eye, EyeOff, Mail, Twitter } from "lucide-react"
+import { Eye, EyeOff, Mail } from "lucide-react"
 // TODO: Get google and X logo new
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
+import axios from "axios"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -23,11 +25,35 @@ export default function SignupPage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     // TODO: Add actual signup logic
     console.log("Form submitted:", formData)
-    router.replace("/welcome") // Will handle profile setup. Include username pickup and avatar upload. Can be skipped. If skipped, default random avatar and username will be assigned.
+
+    // Basic validation
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
+      toast.error("All fields are required")
+      return
+    }
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match")
+      return
+    }
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long")
+      return
+    }
+
+    // API call to "/api/v1/signup" would go here
+    const res = await axios.post("/api/v1/auth/signup", formData)
+    if (res.status === 201) {
+      toast.success("Signup successful! Please check your email to confirm.")
+    } else {
+      toast.error("Signup failed. Please try again.")
+      console.error("Signup error:", res.data)
+    }
+
+    // router.replace("/welcome") // Will handle profile setup. Include username pickup and avatar upload. Can be skipped. If skipped, default random avatar and username will be assigned.
   }
 
   return (
@@ -130,7 +156,7 @@ export default function SignupPage() {
                     onChange={handleInputChange}
                     className="w-full bg-dark border border-dark-border text-light px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
                     placeholder="your.email@disaster.com"
-                    required
+                    // required
                   />
                 </div>
 
@@ -150,7 +176,7 @@ export default function SignupPage() {
                       onChange={handleInputChange}
                       className="w-full bg-dark border border-dark-border text-light px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors pr-12"
                       placeholder="Make it strong (unlike your career)"
-                      required
+                      // required
                     />
                     <button
                       type="button"
@@ -181,7 +207,7 @@ export default function SignupPage() {
                     onChange={handleInputChange}
                     className="w-full bg-dark border border-dark-border text-light px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
                     placeholder="Double-check (like you should've your resume)"
-                    required
+                    // required
                   />
                 </div>
 

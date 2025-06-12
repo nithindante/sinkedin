@@ -44,8 +44,7 @@ export default function SignupPage() {
       return
     }
 
-    // API call to "/api/v1/signup" would go here
-    const res = await axios.post("/api/v1/auth/signup", formData)
+    const res = await axios.post("/api/auth/signup", formData)
     if (res.status === 201) {
       toast.success("Signup successful! Please check your email to confirm.")
     } else {
@@ -245,7 +244,7 @@ export default function SignupPage() {
               <p className="text-light-secondary text-sm">
                 Already failed here before?{" "}
                 <Link
-                  href="/login"
+                  href="/auth/login"
                   className="text-red-400 hover:text-red-300 font-medium"
                 >
                   Sign In

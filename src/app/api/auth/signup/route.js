@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import supabaseServerClient from "@/lib/supabase/server"
 
 export async function POST(request) {
   const { email, password, confirmPassword } = await request.json()
@@ -37,15 +37,16 @@ export async function POST(request) {
   }
 
   // --- 2. Supabase Logic ---
-  const supabase = await createClient()
-  // console.log("Supabase client created:", supabase)
 
   // Construct the redirect URL for the confirmation email
-  const confirmationUrl = `${request.nextUrl.origin}/welcome`
+  const confirmationUrl = `${request.nextUrl.origin}/api/auth/callback`
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await supabaseServerClient.auth.signUp({
     email: email,
     password: password,
+    options: {
+      emailRedirectTo: confirmationUrl, // Redirect URL after email confirmation
+    },
   })
 
   // --- 3. Error Handling ---

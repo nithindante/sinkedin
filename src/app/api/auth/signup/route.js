@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import supabaseServerClient from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request) {
   const { email, password, confirmPassword } = await request.json()
@@ -37,7 +37,7 @@ export async function POST(request) {
   }
 
   // --- 2. Supabase Logic ---
-
+  const supabaseServerClient = await createClient()
   // Construct the redirect URL for the confirmation email
   const confirmationUrl = `${request.nextUrl.origin}/api/auth/callback`
 

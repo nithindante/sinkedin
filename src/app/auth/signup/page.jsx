@@ -27,8 +27,6 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Add actual signup logic
-    console.log("Form submitted:", formData)
 
     // Basic validation
     if (!formData.email || !formData.password || !formData.confirmPassword) {
@@ -44,15 +42,27 @@ export default function SignupPage() {
       return
     }
 
-    const res = await axios.post("/api/auth/signup", formData)
-    if (res.status === 201) {
-      toast.success("Signup successful! Please check your email to confirm.")
-    } else {
-      toast.error("Signup failed. Please try again.")
-      console.error("Signup error:", res.data)
-    }
+    try {
+      const response = await axios.post("/api/auth/signup", {
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      })
 
-    // router.replace("/welcome") // Will handle profile setup. Include username pickup and avatar upload. Can be skipped. If skipped, default random avatar and username will be assigned.
+      if (response.status === 201) {
+        toast.success("Please check your email to confirm your account.")
+      } else {
+        toast.error("Failed to create account. Please try again.")
+      }
+    } catch (error) {
+      console.log("Signup error:", error)
+      if (error.response && error.response.data) {
+        toast.error(error.response.data.error || "Signup failed")
+      } else {
+        toast.error("An unexpected error occurred. Please try again.")
+      }
+      return
+    }
   }
 
   return (

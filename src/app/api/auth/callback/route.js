@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import supabaseServerClient from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
@@ -9,6 +9,8 @@ export async function GET(request) {
   // We'll send them to the welcome page.
   const redirectTo = `${origin}/welcome`
 
+  // Create a Supabase client instance
+  const supabaseServerClient = await createClient()
   if (code) {
     const { error } = await supabaseServerClient.auth.exchangeCodeForSession(
       code

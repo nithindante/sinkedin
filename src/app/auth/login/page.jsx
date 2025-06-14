@@ -1,15 +1,23 @@
 "use client"
 
 import { useState } from "react"
-import { Eye, EyeOff, Github, Mail, AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Eye, EyeOff, Mail, AlertCircle } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import toast from "react-hot-toast"
+import Link from "next/link"
 
 export default function LoginPage() {
+  const router = useRouter()
+
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
   const [rememberMe, setRememberMe] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleInputChange = (e) => {
     setFormData({
@@ -18,17 +26,65 @@ export default function LoginPage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Login submitted:", { ...formData, rememberMe })
+    setIsLoading(true)
+    setError(null)
+    const supabase = createClient()
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      if (error) {
+        setError(error.message)
+        toast.error("Login failed: " + error.message)
+        return // Important to stop the function here
+      }
+
+      // 3. More specific check and better redirect pattern
+      if (data.user) {
+        router.push("/")
+        router.refresh() // Ensures layout re-renders with new auth state
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      setError("An unexpected error occurred. Please try again.")
+      toast.error("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:3000/api/auth/callback", // Adjust this URL as needed
+      },
+    })
+
+    if (error) {
+      toast.error("Google login failed: " + error.message)
+      return
+    }
+
+    // Handle successful Google login if needed
+    if (data.user) {
+      router.push("/")
+      router.refresh() // Ensures layout re-renders with new auth state
+    }
   }
 
   return (
     <div className="min-h-screen flex bg-dark">
-      {/* Left Side - Branding & Motivation */}
+      {/* Left Side - Branding & Motivation (unchanged) */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 bg-dark-secondary">
+        {/* ... your left side content ... */}
         <div className="max-w-md">
-          {/* Logo */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-light">
               S<span className="line-through text-accent">in</span>
@@ -38,8 +94,6 @@ export default function LoginPage() {
               Welcome back to the chaos
             </p>
           </div>
-
-          {/* Welcome Back Message */}
           <div
             className="rounded-lg p-6 mb-8"
             style={{
@@ -60,8 +114,6 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
-
-          {/* Recent Activity Teasers */}
           <div className="space-y-3">
             <div className="flex items-center text-light">
               <div className="w-2 h-2 rounded-full mr-3 bg-accent"></div>
@@ -82,7 +134,6 @@ export default function LoginPage() {
       {/* Right Side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <h1 className="text-3xl font-bold text-light">
               S<span className="line-through text-accent">in</span>
@@ -100,21 +151,24 @@ export default function LoginPage() {
 
             {/* Social Login Buttons */}
             <div className="mb-6">
-              <button className="w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors border hover:opacity-80 bg-dark border-dark-border text-light">
+              <button
+                className="w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors border hover:opacity-80 bg-dark border-dark-border text-light"
+                onClick={handleGoogleLogin}
+                aria-label="Continue with Google"
+              >
                 <Mail className="w-5 h-5 mr-2" />
                 Continue with Google
               </button>
             </div>
 
-            {/* Divider */}
             <div className="flex items-center mb-6">
               <div className="flex-grow border-t border-dark-border"></div>
               <span className="px-4 text-sm text-light-secondary">or</span>
               <div className="flex-grow border-t border-dark-border"></div>
             </div>
 
-            {/* Login Form */}
-            <div className="space-y-4">
+            {/* 4. Use form's onSubmit handler */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label
                   htmlFor="email"
@@ -167,7 +221,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input
@@ -188,42 +241,31 @@ export default function LoginPage() {
                 </a>
               </div>
 
+              {/* 5. Change button type to "submit" */}
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 className="w-full font-semibold py-3 px-4 rounded-lg transition-colors hover:opacity-90 bg-accent text-light"
-                style={{
-                  backgroundColor: "var(--color-accent)",
-                  color: "var(--color-light)",
-                }}
+                disabled={isLoading}
               >
-                Back to the Disaster
+                {isLoading ? "Logging in..." : "Back to the Disaster"}
               </button>
-            </div>
+            </form>
 
-            {/* Signup Link */}
             <div className="mt-6 text-center">
               <p className="text-sm text-light-secondary">
                 New to professional disasters?{" "}
-                <a
-                  href="#"
+                <Link
+                  href="/auth/signup"
                   className="font-medium hover:opacity-70 transition-opacity text-accent"
                 >
                   Join the chaos
-                </a>
+                </Link>
               </p>
             </div>
 
-            {/* Fun Footer Message */}
             <div className="mt-6 p-3 rounded-lg flex items-start bg-dark">
-              <AlertCircle
-                className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-accent"
-                style={{ color: "var(--color-accent)" }}
-              />
-              <p
-                className="text-xs text-light-secondary"
-                style={{ color: "var(--color-light-secondary)" }}
-              >
+              <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-accent" />
+              <p className="text-xs text-light-secondary">
                 By logging in, you acknowledge that your career is probably
                 still a mess, and that's totally fine here.
               </p>

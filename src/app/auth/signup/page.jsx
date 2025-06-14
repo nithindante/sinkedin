@@ -7,10 +7,11 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import axios from "axios"
+import { createClient } from "@/lib/supabase/client"
 
 export default function SignupPage() {
   const router = useRouter()
-
+  const supabase = createClient()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
@@ -63,6 +64,18 @@ export default function SignupPage() {
       }
       return
     }
+  }
+
+  const handleGoogleSignup = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        // This is where Supabase will redirect the user back to your app
+        // after they have signed in with Google.
+        // It MUST be in your Supabase project's list of allowed Redirect URLs.
+        redirectTo: "http://localhost:3000/api/auth/callback",
+      },
+    })
   }
 
   return (
@@ -134,7 +147,10 @@ export default function SignupPage() {
 
             {/* Social Login Buttons */}
             <div className="space-y-3 mb-6">
-              <button className="w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors border hover:opacity-80 bg-dark border-dark-border text-light">
+              <button
+                className="w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors border hover:opacity-80 bg-dark border-dark-border text-light"
+                onClick={handleGoogleSignup}
+              >
                 <Mail className="w-5 h-5 mr-2" />
                 Continue with Google
               </button>

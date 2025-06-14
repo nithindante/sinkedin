@@ -36,6 +36,13 @@ Launch Date: 15th August 2025
 - **Anonymous Mode**: Post anonymously to share fails without professional repercussions.
 - **Profile Basics**: Simple profiles with usernames, bios, and a "Biggest L" section.
 
+## TODOs:
+> When pushing to production:
+
+- Update google OAuth consent screen: user support email
+- Branding and stuff
+- Update authorized js origin
+
 ## Feature Ideas
 
 1. Failure Posts (The Main Feed)

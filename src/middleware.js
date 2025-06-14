@@ -54,7 +54,7 @@ export async function middleware(request) {
   if (!user && request.nextUrl.pathname.startsWith("/welcome")) {
     // If the user is not logged in and tries to access a protected route,
     // redirect them to the login page.
-    return NextResponse.redirect(new URL("/login", request.url))
+    return NextResponse.redirect(new URL("/auth/login", request.url))
   }
 
   // MUST return the response object
@@ -69,6 +69,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
   ],
 }

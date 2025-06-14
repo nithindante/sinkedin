@@ -1,28 +1,32 @@
+//api/auth/callback/route.js
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get("code")
 
-  // This is the URL the user will be redirected to after the code is exchanged.
-  // We'll send them to the welcome page.
-  const redirectTo = `${origin}/welcome`
+  // The user will be redirected to the homepage after auth
+  const next = searchParams.get("next") ?? "/welcome"
 
-  // Create a Supabase client instance
-  const supabaseServerClient = await createClient()
   if (code) {
-    const { error } = await supabaseServerClient.auth.exchangeCodeForSession(
-      code
-    )
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
-      console.error("Supabase callback error:", error.message)
-      // Optionally, redirect to an error page
-      return NextResponse.redirect(`${origin}/login?error=auth_error`) // TODO: Change to a proper error page
+      // Log the full error for better debugging
+      console.error("Supabase callback error:", error)
+      // Redirect to an error page or the login page with a specific error message
+      return NextResponse.redirect(
+        new URL(
+          "/auth/login?error=auth_error&message=" +
+            encodeURIComponent(error.message),
+          request.url
+        )
+      )
     }
   }
 
-  // Redirect to the final destination
-  return NextResponse.redirect(redirectTo)
+  // URL to redirect to after successful auth
+  return NextResponse.redirect(new URL(next, request.url))
 }

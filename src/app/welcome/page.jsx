@@ -1,29 +1,25 @@
 "use client"
 
-import { useState } from "react"
-import {
-  Camera,
-  RefreshCw,
-  User,
-  MapPin,
-  Briefcase,
-  Calendar,
-  ArrowRight,
-  X,
-} from "lucide-react"
+import { useState, useEffect } from "react"
+import { Camera, RefreshCw, User, ArrowRight, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import toast from "react-hot-toast"
+import { createClient } from "@/lib/supabase/client"
+import axios from "axios"
 
 export default function Page() {
   const router = useRouter()
-  const [username, setUsername] = useState("DisasterPro42")
-  const [bio, setBio] = useState("")
-  const [location, setLocation] = useState("")
-  const [jobTitle, setJobTitle] = useState("")
-  const [experience, setExperience] = useState("")
+  const [username, setUsername] = useState("DisasterPro42") // TODO: Find better default username
+  const [headline, setHeadline] = useState(null)
+  const [bio, setBio] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   // Generate random usernames for fun
+  // TODO: Find better
   const randomUsernames = [
     "FailureKing99",
     "RejectMaster",
@@ -51,74 +47,168 @@ export default function Page() {
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0]
     if (file) {
+      setAvatarFile(file)
+
+      // Create a preview of the uploaded image
       const reader = new FileReader()
       reader.onload = (e) => setAvatarPreview(e.target.result)
       reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = () => {
-    console.log("Profile setup:", {
-      username,
-      bio,
-      location,
-      jobTitle,
-      experience,
-      avatar: avatarPreview,
-    })
-    // Navigate to main app
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    // Validate required fields
+    if (!username) {
+      toast.error("Username is required")
+      return
+    }
+    if (username.length < 3 || username.length > 50) {
+      toast.error("Username must be between 3 and 50 characters")
+      return
+    }
+    if (headline && headline.length > 100) {
+      toast.error("Headline must be less than 100 characters")
+      return
+    }
+    if (bio && bio.length > 200) {
+      toast.error("Bio must be less than 200 characters")
+      return
+    }
+
+    setLoading(true)
+    const supabase = createClient()
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      toast.error("You must be logged in to create a profile")
+      setLoading(false)
+      // TODO: Redirect to login page
+      return
+    }
+
+    let avatarUrl = null
+
+    if (avatarFile) {
+      // Check if the file is an image and under 5MB
+      if (
+        !avatarFile.type.startsWith("image/") ||
+        avatarFile.size > 5 * 1024 * 1024
+      ) {
+        toast.error("Please upload a valid image under 5MB")
+        setLoading(false)
+        return
+      }
+      // Create a unique filename
+      const fileExt = avatarFile.name.split(".").pop()
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `${user.id}/${fileName}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, avatarFile)
+      if (uploadError) {
+        toast.error("Failed to upload avatar image")
+        console.error(uploadError)
+        setLoading(false)
+        return
+      }
+      // Get the public URL of the uploaded image
+      const { data } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(uploadData.path)
+
+      if (!data.publicUrl) {
+        toast.error("Failed to get avatar URL.")
+        setLoading(false)
+        return
+      }
+      avatarUrl = data.publicUrl
+    }
+
+    // Send all data to the server
+    try {
+      const response = await axios.post("/api/profile/create", {
+        id: user.id, // Ensure user ID is sent
+        username,
+        headline,
+        bio,
+        avatar: avatarUrl,
+      })
+
+      if (response.status === 201) {
+        toast.success("Profile created successfully!")
+        // Redirect to the main app or profile page
+        router.replace("/") // Assuming this is the main app route
+      } else {
+        toast.error("Failed to create profile")
+      }
+    } catch (error) {
+      console.error("Error creating profile:", error)
+      toast.error("An error occurred while creating your profile")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     console.log("Skipped setup, using defaults")
     // Navigate to main app with default values
-    router.replace("/") // Assuming this is the main app route
+    // take default username and send request to create profile
+    const supabase = createClient()
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+    if (userError || !user) {
+      toast.error("You must be logged in to create a profile")
+      // TODO: Redirect to login page
+    }
+
+    try {
+      const response = await axios.post("/api/profile/create", {
+        id: user.id,
+        username: "DisasterPro42", // TODO: Change Default username
+        headline: "",
+        bio: "",
+        avatar: null, // No avatar for skipped setup
+      })
+      if (response.status === 201) {
+        toast.success("Profile created with default values!")
+        router.replace("/") // Assuming this is the main app route
+      } else {
+        toast.error("Failed to create profile with default values")
+      }
+    } catch (error) {
+      console.error("Error creating default profile:", error)
+      toast.error("An error occurred while creating your default profile")
+    }
   }
 
   return (
-    <div
-      className="min-h-screen p-4"
-      style={{ backgroundColor: "var(--color-dark)" }}
-    >
+    <div className="min-h-screen p-4 bg-dark">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-bold mb-2"
-            style={{ color: "var(--color-light)" }}
-          >
-            Welcome to S
-            <span
-              className="line-through"
-              style={{ color: "var(--color-accent)" }}
-            >
-              in
-            </span>
+          <h1 className="text-3xl font-bold mb-2 text-light">
+            Welcome to S<span className="line-through text-accent">in</span>
             kedIn!
           </h1>
-          <p
-            className="text-lg"
-            style={{ color: "var(--color-light-secondary)" }}
-          >
+          <p className="text-lg text-light-secondary">
             Let's set up your professional disaster profile
           </p>
         </div>
 
         {/* Main Card */}
-        <div
-          className="rounded-lg border p-8 mb-6"
-          style={{
-            backgroundColor: "var(--color-dark-secondary)",
-            borderColor: "var(--color-dark-border)",
-          }}
-        >
+        <div className="rounded-lg border p-8 mb-6 bg-dark-secondary border-dark-border">
           {/* Avatar Section */}
           <div className="text-center mb-8">
             <div className="relative inline-block">
-              <div
-                className="w-24 h-24 rounded-full border-2 flex items-center justify-center mb-4 overflow-hidden"
-                style={{ borderColor: "var(--color-dark-border)" }}
-              >
+              <div className="w-24 h-24 rounded-full border-2 flex items-center justify-center mb-4 overflow-hidden border-dark-border">
                 {avatarPreview ? (
                   <img
                     src={avatarPreview}
@@ -126,24 +216,18 @@ export default function Page() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User
-                    className="w-10 h-10"
-                    style={{ color: "var(--color-light-secondary)" }}
+                  <Image
+                    src="/default_avatar.jpg" // Assuming the default image is stored in the public folder
+                    alt="Default Avatar"
+                    width={96}
+                    height={96}
+                    className="rounded-full object-cover w-full h-full"
                   />
                 )}
               </div>
 
-              <label
-                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full border cursor-pointer flex items-center justify-center hover:opacity-80 transition-opacity"
-                style={{
-                  backgroundColor: "var(--color-accent)",
-                  borderColor: "var(--color-dark-border)",
-                }}
-              >
-                <Camera
-                  className="w-4 h-4"
-                  style={{ color: "var(--color-light)" }}
-                />
+              <label className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full border cursor-pointer flex items-center justify-center hover:opacity-80 transition-opacity bg-accent border-dark-border">
+                <Camera className="w-4 h-4 text-light" />
                 <input
                   type="file"
                   accept="image/*"
@@ -152,33 +236,22 @@ export default function Page() {
                 />
               </label>
             </div>
-            <p
-              className="text-sm"
-              style={{ color: "var(--color-light-secondary)" }}
-            >
+            <p className="text-sm text-light-secondary mt-2">
               Upload your best disaster face (optional)
             </p>
           </div>
-
           {/* Username Section */}
           <div className="mb-6">
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--color-light)" }}
-            >
-              Username *
+            <label className="block text-sm font-medium mb-2 text-light">
+              Username{" "}
+              <span className="text-xs text-light-secondary">(required)</span>
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-lg border outline-none transition-colors"
-                style={{
-                  backgroundColor: "var(--color-dark)",
-                  borderColor: "var(--color-dark-border)",
-                  color: "var(--color-light)",
-                }}
+                className="flex-1 px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
                 onFocus={(e) =>
                   (e.target.style.borderColor = "var(--color-accent)")
                 }
@@ -188,45 +261,49 @@ export default function Page() {
               />
               <button
                 onClick={generateRandomUsername}
-                className="px-4 py-3 rounded-lg border hover:opacity-80 transition-opacity"
-                style={{
-                  backgroundColor: "var(--color-dark)",
-                  borderColor: "var(--color-dark-border)",
-                }}
+                className="px-4 py-3 rounded-lg border hover:opacity-80 transition-opacity bg-dark border-dark-border"
                 title="Generate random username"
               >
-                <RefreshCw
-                  className="w-5 h-5"
-                  style={{ color: "var(--color-accent)" }}
-                />
+                <RefreshCw className="w-5 h-5 text-accent" />
               </button>
             </div>
-            <p
-              className="text-xs mt-1"
-              style={{ color: "var(--color-light-secondary)" }}
-            >
-              This is how other failures will know you
+            <p className="text-xs mt-1 text-light-secondary">
+              This is how other loosers will know you
             </p>
           </div>
-
+          {/* Headline Section Just like linkedin */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2 text-light">
+              Headline
+            </label>
+            <input
+              type="text"
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
+              onFocus={(e) =>
+                (e.target.style.borderColor = "var(--color-accent)")
+              }
+              onBlur={(e) =>
+                (e.target.style.borderColor = "var(--color-dark-border)")
+              }
+              placeholder="Your epic career disaster in a nutshell"
+              maxLength={100}
+            />
+            <p className="text-xs mt-1 text-light-secondary">
+              {headline.length}/200 characters
+            </p>
+          </div>
           {/* Bio Section */}
           <div className="mb-6">
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--color-light)" }}
-            >
-              Bio (Optional)
+            <label className="block text-sm font-medium mb-2 text-light">
+              Flaunt Your Failures (Bio)
             </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none"
-              style={{
-                backgroundColor: "var(--color-dark)",
-                borderColor: "var(--color-dark-border)",
-                color: "var(--color-light)",
-              }}
+              className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none bg-dark border-dark-border text-light"
               onFocus={(e) =>
                 (e.target.style.borderColor = "var(--color-accent)")
               }
@@ -236,135 +313,29 @@ export default function Page() {
               placeholder="Tell us about your epic career disasters..."
               maxLength={200}
             />
-            <p
-              className="text-xs mt-1"
-              style={{ color: "var(--color-light-secondary)" }}
-            >
+            <p className="text-xs mt-1 text-light-secondary">
               {bio.length}/200 characters
             </p>
           </div>
-
-          {/* Additional Details */}
-          <div className="grid md:grid-cols-2 gap-4 mb-8">
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--color-light)" }}
-              >
-                <MapPin className="w-4 h-4 inline mr-1" />
-                Location (Optional)
-              </label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border outline-none transition-colors"
-                style={{
-                  backgroundColor: "var(--color-dark)",
-                  borderColor: "var(--color-dark-border)",
-                  color: "var(--color-light)",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.borderColor = "var(--color-accent)")
-                }
-                onBlur={(e) =>
-                  (e.target.style.borderColor = "var(--color-dark-border)")
-                }
-                placeholder="Where you're failing from"
-              />
-            </div>
-
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--color-light)" }}
-              >
-                <Briefcase className="w-4 h-4 inline mr-1" />
-                Dream Job (Optional)
-              </label>
-              <input
-                type="text"
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border outline-none transition-colors"
-                style={{
-                  backgroundColor: "var(--color-dark)",
-                  borderColor: "var(--color-dark-border)",
-                  color: "var(--color-light)",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.borderColor = "var(--color-accent)")
-                }
-                onBlur={(e) =>
-                  (e.target.style.borderColor = "var(--color-dark-border)")
-                }
-                placeholder="What you'll never get"
-              />
-            </div>
-          </div>
-
-          {/* Experience Level */}
-          <div className="mb-8">
-            <label
-              className="block text-sm font-medium mb-3"
-              style={{ color: "var(--color-light)" }}
-            >
-              <Calendar className="w-4 h-4 inline mr-1" />
-              Years of Professional Suffering (Optional)
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {["0-1 years", "2-5 years", "5-10 years", "10+ years"].map(
-                (exp) => (
-                  <button
-                    key={exp}
-                    onClick={() => setExperience(exp)}
-                    className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
-                      experience === exp ? "border-accent" : ""
-                    }`}
-                    style={{
-                      backgroundColor:
-                        experience === exp
-                          ? "var(--color-accent)"
-                          : "var(--color-dark)",
-                      borderColor:
-                        experience === exp
-                          ? "var(--color-accent)"
-                          : "var(--color-dark-border)",
-                      color:
-                        experience === exp
-                          ? "var(--color-light)"
-                          : "var(--color-light-secondary)",
-                    }}
-                  >
-                    {exp}
-                  </button>
-                )
-              )}
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleSubmit}
-              className="flex-1 px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-              style={{
-                backgroundColor: "var(--color-accent)",
-                color: "var(--color-light)",
-              }}
+              className="flex-1 px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity bg-accent text-light"
             >
-              Complete Setup
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="loader"></span> Creating Profile...
+                </span>
+              ) : (
+                "Create Profile"
+              )}
               <ArrowRight className="w-5 h-5" />
             </button>
 
             <button
               onClick={handleSkip}
-              className="px-6 py-3 rounded-lg border font-medium flex items-center justify-center gap-2 hover:opacity-80 transition-opacity"
-              style={{
-                backgroundColor: "transparent",
-                borderColor: "var(--color-dark-border)",
-                color: "var(--color-light-secondary)",
-              }}
+              className="px-6 py-3 rounded-lg border font-medium flex items-center justify-center gap-2 hover:opacity-80 transition-opacity border-dark-border text-light-secondary bg-transparent"
             >
               Skip for Now
               <X className="w-4 h-4" />
@@ -374,10 +345,7 @@ export default function Page() {
 
         {/* Footer Note */}
         <div className="text-center">
-          <p
-            className="text-sm"
-            style={{ color: "var(--color-light-secondary)" }}
-          >
+          <p className="text-sm text-light-secondary">
             Don't worry, you can change all of this later in your profile
             settings.
             <br />

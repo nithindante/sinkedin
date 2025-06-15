@@ -42,6 +42,7 @@ Launch Date: 15th August 2025
 - Update google OAuth consent screen: user support email
 - Branding and stuff
 - Update authorized js origin
+- Setup storage bucket, set image mime type and 5MB limit and RLS policy
 
 ## Feature Ideas
 

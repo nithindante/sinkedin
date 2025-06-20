@@ -2,11 +2,10 @@
 
 import { useState } from "react"
 import { Eye, EyeOff, Mail } from "lucide-react"
-// TODO: Get google and X logo new
+// TODO: Get google logo new
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
-import axios from "axios"
 import { createClient } from "@/lib/supabase/client"
 
 export default function SignupPage() {
@@ -44,16 +43,26 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await axios.post("/api/auth/signup", {
+      const supabase = createClient()
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
       })
+      if (error) {
+        console.error("Supabase signup error:", error)
+        toast.error(error.message || "Failed to create account")
+        return
+      }
 
-      if (response.status === 201) {
-        toast.success("Please check your email to confirm your account.")
+      if (user) {
+        router.push("/feed")
       } else {
-        toast.error("Failed to create account. Please try again.")
+        toast.error("Signup failed, please try again")
+        console.error("User object is null or undefined")
+        return
       }
     } catch (error) {
       console.log("Signup error:", error)

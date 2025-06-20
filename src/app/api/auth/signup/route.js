@@ -1,6 +1,8 @@
+// To be used in v2 -> where email verification needs to be handled
+
 // api/auth/signup/route.js
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 
 export async function POST(request) {
   const { email, password, confirmPassword } = await request.json()
@@ -38,16 +40,12 @@ export async function POST(request) {
   }
 
   // --- 2. Supabase Logic ---
-  const supabaseServerClient = await createClient()
-  // Construct the redirect URL for the confirmation email
-  const confirmationUrl = `${request.nextUrl.origin}/api/auth/callback`
+  const supabaseBrowserClient = createClient()
 
-  const { data, error } = await supabaseServerClient.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-      emailRedirectTo: confirmationUrl, // Redirect URL after email confirmation
-    },
+  // No email verification required right now. So we can directly sign up the user.
+  const { user, session, error } = await supabaseBrowserClient.auth.signUp({
+    email,
+    password,
   })
 
   // --- 3. Error Handling ---
@@ -70,7 +68,7 @@ export async function POST(request) {
     {
       message:
         "Confirmation email sent. Please check your inbox to complete signup.",
-      user: data.user, // You can send back the user data if needed
+      user: user,
     },
     { status: 201 } // 201 Created
   )

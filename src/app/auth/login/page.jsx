@@ -46,7 +46,7 @@ export default function LoginPage() {
 
       // 3. More specific check and better redirect pattern
       if (data.user) {
-        router.push("/")
+        router.push("/feed")
         router.refresh() // Ensures layout re-renders with new auth state
       }
     } catch (error) {

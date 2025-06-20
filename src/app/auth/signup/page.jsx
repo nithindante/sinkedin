@@ -58,7 +58,7 @@ export default function SignupPage() {
       }
 
       if (user) {
-        router.push("/feed")
+        router.push("/welcome")
       } else {
         toast.error("Signup failed, please try again")
         console.error("User object is null or undefined")

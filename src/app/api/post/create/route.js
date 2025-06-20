@@ -15,6 +15,7 @@ export async function POST(request) {
 
     const supabase = await createClient()
     const { data: session, error: sessionError } = await supabase.auth.getUser()
+    console.log("Session data:", session)
 
     if (sessionError) {
       console.error("Session error:", sessionError)
@@ -25,20 +26,15 @@ export async function POST(request) {
     }
 
     const userId = session?.user?.id || null
+    console.log("User ID:", userId)
     const isAuthenticated = !!userId
+    console.log("Is authenticated:", isAuthenticated)
 
     // If the user is not authenticated and tries to post anonymously, return an error
     if (isAnonymous && !isAuthenticated) {
       return NextResponse.json(
         { error: "You must be logged in to post anonymously." },
         { status: 403 }
-      )
-    }
-    // If the user is authenticated, they can post anonymously or with their user ID
-    if (isAuthenticated && isAnonymous && !userId) {
-      return NextResponse.json(
-        { error: "User ID is required for authenticated users." },
-        { status: 400 }
       )
     }
 
@@ -52,6 +48,15 @@ export async function POST(request) {
       })
       .select()
       .single()
+
+    if (postError) {
+      console.error("Post insertion error:", postError)
+      return NextResponse.json(
+        { error: "Failed to create post." },
+        { status: 500 }
+      )
+    }
+    console.log("Post created:", post)
 
     return NextResponse.json({ post }, { status: 201 })
   } catch (error) {

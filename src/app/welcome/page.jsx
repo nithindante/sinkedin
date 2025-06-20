@@ -179,7 +179,7 @@ export default function Page() {
       })
       if (response.status === 201) {
         toast.success("Profile created with default values!")
-        router.replace("/") // Assuming this is the main app route
+        router.replace("/feed") // Assuming this is the main app route
       } else {
         toast.error("Failed to create profile with default values")
       }
@@ -291,7 +291,7 @@ export default function Page() {
               maxLength={100}
             />
             <p className="text-xs mt-1 text-light-secondary">
-              {headline.length}/200 characters
+              {headline ? headline.length : 0}/100 characters
             </p>
           </div>
           {/* Bio Section */}
@@ -314,7 +314,7 @@ export default function Page() {
               maxLength={200}
             />
             <p className="text-xs mt-1 text-light-secondary">
-              {bio.length}/200 characters
+              {bio ? bio.length : 0}/200 characters
             </p>
           </div>
           {/* Action Buttons */}

@@ -14,8 +14,7 @@ export async function POST(request) {
     }
 
     const supabase = await createClient()
-    const { data: session, error: sessionError } =
-      await supabase.auth.getSession()
+    const { data: session, error: sessionError } = await supabase.auth.getUser()
 
     if (sessionError) {
       console.error("Session error:", sessionError)
@@ -25,7 +24,7 @@ export async function POST(request) {
       )
     }
 
-    const userId = session?.session?.user?.id || null
+    const userId = session?.user?.id || null
     const isAuthenticated = !!userId
 
     // If the user is not authenticated and tries to post anonymously, return an error

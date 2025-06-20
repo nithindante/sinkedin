@@ -10,14 +10,22 @@ export async function GET() {
       .from("posts")
       .select(
         `
-        id,
-        user_id,
-        body,
-        is_anonymous,
-        created_at,
-        author: profiles!posts_user_id_fkey (username, avatar_url)
-        reactions (user_id, reaction)
-      `
+          id,
+          user_id,
+          body,
+          is_anonymous,
+          created_at,
+          profiles!posts_user_id_fkey (
+            id,
+            username,
+            avatar_url
+          ),
+          reactions (
+            user_id,
+            reaction,
+            created_at
+          )
+        `
       )
       .order("created_at", { ascending: false })
 
@@ -29,7 +37,38 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({ posts }, { status: 200 })
+    const transformedPosts = posts.map((post) => {
+      // Count reactions by type
+      const reactionCounts = {
+        F: 0,
+        Clown: 0,
+        Skull: 0,
+        Relatable: 0,
+      }
+
+      post.reactions.forEach((reaction) => {
+        reactionCounts[reaction.reaction]++
+      })
+
+      return {
+        id: post.id,
+        user_id: post.user_id,
+        body: post.body,
+        is_anonymous: post.is_anonymous,
+        created_at: post.created_at,
+        author: post.is_anonymous
+          ? null
+          : {
+              id: post.profiles?.id,
+              username: post.profiles?.username,
+              avatar_url: post.profiles?.avatar_url,
+            },
+        reaction_counts: reactionCounts,
+        reaction: post.reactions,
+      }
+    })
+
+    return NextResponse.json({ posts: transformedPosts }, { status: 200 })
   } catch (error) {
     console.error("Unexpected error:", error)
     return NextResponse.json(

@@ -24,7 +24,7 @@ export async function POST(request) {
       )
     }
 
-    const userId = session?.session?.user?.id || null
+    const userId = session?.user?.id || null
     const isAuthenticated = !!userId
     // If the user is not authenticated, they cannot react
     if (!isAuthenticated) {

@@ -49,6 +49,11 @@ export default function PostCard({ post, currentUserId }) {
   }, [currentUserId, post])
 
   const handleReactionClick = async (emojiName) => {
+    // if the user is not logged in, do nothing
+    if (!currentUserId) {
+      return
+    }
+
     const originalReactedEmoji = reactedEmoji
     const originalCounts = { ...counts }
 

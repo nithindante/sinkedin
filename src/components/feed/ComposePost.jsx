@@ -79,7 +79,11 @@ export default function ComposePost() {
     <div className="bg-dark-secondary border border-dark-border rounded-lg p-6">
       <textarea
         className="w-full bg-dark border border-dark-border rounded-lg p-4 text-light text-lg resize-y min-h-[100px] placeholder:text-light-secondary focus:outline-none focus:ring-1 focus:ring-accent"
-        placeholder="What went wrong today? Share your latest failure..."
+        placeholder={
+          isAuthenticated
+            ? "What went wrong today? Share your latest failure..."
+            : "Please log in to share your thoughts..."
+        }
         value={content}
         onChange={(e) => setContent(e.target.value)}
         disabled={isLoading}

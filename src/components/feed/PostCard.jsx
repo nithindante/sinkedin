@@ -142,7 +142,7 @@ export default function PostCard({ post, currentUserId }) {
       </div>
 
       {/* Post Actions/Reactions - with counts and updated styling */}
-      <div className="flex gap-2 py-3 border-t border-b border-dark-border mb-4 flex-wrap">
+      <div className="flex gap-2 pt-3 border-t  border-dark-border flex-wrap">
         {Object.entries(counts).map(([emojiName, count]) => {
           const emoji = reactionToEmojiMap[emojiName] || emojiName
           const hasReacted = reactedEmoji === emojiName
@@ -161,10 +161,9 @@ export default function PostCard({ post, currentUserId }) {
         })}
       </div>
 
-      {/* Add Comment Input */}
-      <div className="flex items-center gap-3">
+      {/* Move Comment Input to v2*/}
+      {/* <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-dark-border rounded-full flex items-center justify-center text-base flex-shrink-0 text-light">
-          {/* Replace with current user avatar later */}
           <Image
             src="/default_avatar.jpg"
             alt="Your Avatar"
@@ -176,10 +175,10 @@ export default function PostCard({ post, currentUserId }) {
         <div className="bg-dark w-full px-4 py-2.5 rounded-full text-light-secondary text-sm cursor-pointer border border-dark-border hover:border-light-secondary transition-colors">
           Add a comment...
         </div>
-      </div>
+      </div> */}
 
       {/* --- NEW STATIC COMMENT SECTION --- */}
-      <div className="mt-4 pt-4 border-t border-dark-border flex flex-col gap-4">
+      {/* <div className="mt-4 pt-4 border-t border-dark-border flex flex-col gap-4">
         <Comment
           author="CleverCoyote"
           avatar="/default_avatar.jpg"
@@ -192,30 +191,30 @@ export default function PostCard({ post, currentUserId }) {
           text="Hmm, I'm not so sure. Have you considered the other side of the argument?"
           timestamp="1h ago"
         />
-      </div>
+      </div> */}
     </article>
   )
 }
 
-function Comment({ author, avatar, text, timestamp }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-8 h-8 bg-dark-border rounded-full flex-shrink-0 mt-1">
-        <Image
-          src={avatar || "/default_avatar.jpg"}
-          alt={`${author}'s avatar`}
-          width={32}
-          height={32}
-          className="rounded-full object-cover"
-        />
-      </div>
-      <div className="flex-1 bg-dark px-4 py-2 rounded-lg">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-light text-sm">{author}</span>
-          <span className="text-light-secondary text-xs">{timestamp}</span>
-        </div>
-        <p className="text-light whitespace-pre-wrap mt-1 text-sm">{text}</p>
-      </div>
-    </div>
-  )
-}
+// function Comment({ author, avatar, text, timestamp }) {
+//   return (
+//     <div className="flex items-start gap-3">
+//       <div className="w-8 h-8 bg-dark-border rounded-full flex-shrink-0 mt-1">
+//         <Image
+//           src={avatar || "/default_avatar.jpg"}
+//           alt={`${author}'s avatar`}
+//           width={32}
+//           height={32}
+//           className="rounded-full object-cover"
+//         />
+//       </div>
+//       <div className="flex-1 bg-dark px-4 py-2 rounded-lg">
+//         <div className="flex items-center gap-2">
+//           <span className="font-semibold text-light text-sm">{author}</span>
+//           <span className="text-light-secondary text-xs">{timestamp}</span>
+//         </div>
+//         <p className="text-light whitespace-pre-wrap mt-1 text-sm">{text}</p>
+//       </div>
+//     </div>
+//   )
+// }

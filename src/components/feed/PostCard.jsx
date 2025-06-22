@@ -1,18 +1,10 @@
-/**
- * PostCard Component
- *
- * This component is designed to display a single post. It receives a 'post' object
- * as a prop, which contains all necessary data like author, content, and reactions.
- * This structure makes it easy to map over an array of posts fetched from an API.
- */
-
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, currentUserId }) {
   const {
     id,
     author,
@@ -37,37 +29,75 @@ export default function PostCard({ post }) {
     Relatable: "🤝",
   }
 
-  // const [reactedEmoji, setReactedEmoji] = useState(
-  //   reaction.find((reaction) => reaction.user_id === author?.id)?.emoji_name ||
-  //     null
-  // )
+  const findUserReaction = () => {
+    if (!currentUserId || !reaction) return null
+    const userReaction = reaction.find((r) => r.user_id === currentUserId)
+    return userReaction ? userReaction.reaction : null
+  }
 
-  const [reactedEmoji, setReactedEmoji] = useState(
-    reaction[0]?.reaction || null
-  )
+  const [reactedEmoji, setReactedEmoji] = useState(findUserReaction())
+
+  // --- 2. NEW: Add state for reaction counts to allow optimistic updates ---
+  const [counts, setCounts] = useState(reaction_counts)
+
+  // This hook will run when the component mounts and whenever the props
+  // `currentUserId` or `post` change. This solves the race condition where
+  // the user ID might not be available on the very first render.
+  useEffect(() => {
+    setReactedEmoji(findUserReaction())
+    setCounts(reaction_counts)
+  }, [currentUserId, post])
 
   const handleReactionClick = async (emojiName) => {
-    try {
-      // Optimistic update: set the new reaction immediately for better UX
-      const newReactedEmoji = reactedEmoji === emojiName ? null : emojiName
-      setReactedEmoji(newReactedEmoji)
+    const originalReactedEmoji = reactedEmoji
+    const originalCounts = { ...counts }
 
+    // Determine the next state before updating
+    const newReactedEmoji =
+      originalReactedEmoji === emojiName ? null : emojiName
+
+    const newCounts = { ...counts }
+
+    if (originalReactedEmoji === emojiName) {
+      // Case 1: User is UN-REACTING (clicking the same emoji again)
+      // Decrease the count of the clicked emoji.
+      newCounts[emojiName]--
+    } else if (originalReactedEmoji) {
+      // Case 2: User is CHANGING their reaction
+      // Decrease the count of the OLD emoji.
+      newCounts[originalReactedEmoji]--
+      // Increase the count of the NEW emoji.
+      newCounts[emojiName]++
+    } else {
+      // Case 3: User is REACTING for the first time
+      // Increase the count of the new emoji.
+      newCounts[emojiName]++
+    }
+
+    // Optimistically update the UI
+    setReactedEmoji(newReactedEmoji)
+    setCounts(newCounts)
+
+    try {
       const response = await axios.post("/api/post/react", {
         emojiName,
         postId: id,
       })
 
       if (response.status !== 201) {
-        // If the API call fails, revert the state
-        setReactedEmoji(reactedEmoji)
+        // If API call fails, revert the state to the original
+        setReactedEmoji(originalReactedEmoji)
+        setCounts(originalCounts)
         console.error("Failed to react:", response.data.error)
       }
     } catch (error) {
-      // If there's an error, revert the state
-      setReactedEmoji(reactedEmoji)
+      // If there's any other error, revert the state
+      setReactedEmoji(originalReactedEmoji)
+      setCounts(originalCounts)
       console.error("Error reacting to post:", error)
     }
   }
+
   return (
     <article className="bg-dark-secondary border border-dark-border rounded-lg p-6">
       {/* Post Header */}
@@ -108,7 +138,7 @@ export default function PostCard({ post }) {
 
       {/* Post Actions/Reactions - with counts and updated styling */}
       <div className="flex gap-2 py-3 border-t border-b border-dark-border mb-4 flex-wrap">
-        {Object.entries(reaction_counts).map(([emojiName, count]) => {
+        {Object.entries(counts).map(([emojiName, count]) => {
           const emoji = reactionToEmojiMap[emojiName] || emojiName
           const hasReacted = reactedEmoji === emojiName
           return (
@@ -120,7 +150,6 @@ export default function PostCard({ post }) {
               onClick={() => handleReactionClick(emojiName)}
             >
               <span className="text-lg">{emoji}</span>
-              {/* Here we would need to optimistically update the count on click, but for now it's fine */}
               <span>{count}</span>
             </button>
           )

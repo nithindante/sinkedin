@@ -19,12 +19,22 @@ const fetchPosts = async () => {
   }
 }
 
-// Maybe here we need to show the loading skeleton while fetching posts
-
 export default function HomePage() {
   const [posts, setPosts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState(null)
+
   useEffect(() => {
+    // --- NEW: Fetch the current user ---
+    const supabase = createClient()
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setCurrentUser(user)
+    }
+    fetchUser()
+
     const loadPosts = async () => {
       setIsLoading(true)
       const fetchedPosts = await fetchPosts()
@@ -54,7 +64,11 @@ export default function HomePage() {
         ) : (
           <div className="flex flex-col gap-6">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                currentUserId={currentUser?.id}
+              />
             ))}
           </div>
         )}

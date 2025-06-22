@@ -49,16 +49,69 @@ export async function POST(request) {
       .select()
       .single()
 
-    if (postError) {
+    if (postError || !post) {
       console.error("Post insertion error:", postError)
       return NextResponse.json(
         { error: "Failed to create post." },
         { status: 500 }
       )
     }
-    console.log("Post created:", post)
 
-    return NextResponse.json({ post }, { status: 201 })
+    // 2. Fetch the newly created post with all the joins and transformations. This is necessary as it will be needed to update the UI immediately after creation.
+    const { data: fullPost, error: fetchError } = await supabase
+      .from("posts")
+      .select(
+        `
+        id,
+        user_id,
+        body,
+        is_anonymous,
+        created_at,
+        profiles!posts_user_id_fkey (
+          id,
+          username,
+          avatar_url
+        ),
+        reactions (
+          user_id,
+          reaction,
+          created_at
+        )
+      `
+      )
+      .eq("id", post.id) // Filter to get only the post we just created
+      .single() // We expect only one result
+
+    if (fetchError || !fullPost) {
+      console.error("Error fetching newly created post:", fetchError)
+      // You might want to handle this case, e.g., by deleting the orphaned post
+      return NextResponse.json(
+        { error: "Post created, but failed to fetch its details." },
+        { status: 500 }
+      )
+    }
+
+    // 3. Manually transform the single post object just like in your feed API
+    const transformedPost = {
+      id: fullPost.id,
+      user_id: fullPost.user_id,
+      body: fullPost.body,
+      is_anonymous: fullPost.is_anonymous,
+      created_at: fullPost.created_at,
+      author: fullPost.is_anonymous
+        ? null
+        : {
+            id: fullPost.profiles?.id,
+            username: fullPost.profiles?.username,
+            avatar_url: fullPost.profiles?.avatar_url,
+          },
+      // A new post will have no reactions
+      reaction_counts: { F: 0, Clown: 0, Skull: 0, Relatable: 0 },
+      reaction: [], // An empty array for reactions
+    }
+
+    // 4. Return the fully formed post object
+    return NextResponse.json({ post: transformedPost }, { status: 201 })
   } catch (error) {
     console.error("Error creating post:", error)
     return NextResponse.json(

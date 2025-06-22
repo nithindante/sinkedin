@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      new URL("http://127.0.0.1:54321/storage/v1/object/public/avatars/**"),
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig

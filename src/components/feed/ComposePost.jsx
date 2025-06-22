@@ -8,12 +8,12 @@ import axios from "axios"
 // TODO: Adding post should appear instantly in feed without refresh
 // ? mostly will need context or state management solution like Redux or Zustand
 
-export default function ComposePost() {
+export default function ComposePost({ onPostCreated }) {
   const [content, setContent] = useState("")
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [userId, setUserId] = useState(null)
+
   const supabase = createClient()
 
   useEffect(() => {
@@ -22,14 +22,10 @@ export default function ComposePost() {
         data: { session },
       } = await supabase.auth.getSession()
       setIsAuthenticated(!!session)
-      if (session) {
-        setUserId(session.user.id)
-      } else {
-        setUserId(null)
-      }
     }
 
     checkAuth()
+    // No need to listen to supabase changes here, it's simple enough
   }, [])
 
   const handleAnonymousChange = (e) => {
@@ -57,10 +53,15 @@ export default function ComposePost() {
         content: content.trim(),
         isAnonymous: isAnonymous,
       })
+      // console.log("Post response:", response.data)
       if (response.status === 201) {
         toast.success("Post created successfully!")
         setContent("")
         setIsAnonymous(false)
+
+        if (onPostCreated) {
+          onPostCreated(response.data.post) // Notify parent component if needed
+        }
       } else {
         toast.error("Failed to create post.")
       }

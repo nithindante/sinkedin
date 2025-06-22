@@ -44,11 +44,17 @@ export default function HomePage() {
     loadPosts()
   }, [])
 
+  const handlePostCreated = (newPost) => {
+    // This function will be called when a new post is created
+    // You can update the posts state here to include the new post
+    setPosts((prevPosts) => [newPost, ...prevPosts])
+  }
+
   return (
     <>
       <Header />
       <main className="max-w-[800px] mx-auto my-8 px-6 flex flex-col gap-6">
-        <ComposePost />
+        <ComposePost onPostCreated={handlePostCreated} />
 
         {/* This section maps over the static data to render the posts.
             This is where you would map over data fetched from your database. */}

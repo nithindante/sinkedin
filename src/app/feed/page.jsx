@@ -1,6 +1,6 @@
 "use client"
 
-import Header from "@/components/feed/Header"
+import Header from "@/components/Header"
 import ComposePost from "@/components/feed/ComposePost"
 import PostCard from "@/components/feed/PostCard"
 import PostCardSkeleton from "@/components/feed/PostCardSkeleton"

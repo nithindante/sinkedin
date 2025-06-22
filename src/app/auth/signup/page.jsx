@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Eye, EyeOff, Mail } from "lucide-react"
-// TODO: Get google logo new
+import { Eye, EyeOff } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
@@ -98,7 +98,7 @@ export default function SignupPage() {
               S<strike className="text-accent no-underline">in</strike>kedIn
             </h1>
             <p className="text-light-secondary mt-2 text-lg">
-              Where careers go to die (and get roasted)
+              Linkedin's Darker, Funnier and More Honest Cousin
             </p>
           </div>
 
@@ -160,7 +160,13 @@ export default function SignupPage() {
                 className="w-full py-3 px-4 rounded-lg flex items-center justify-center transition-colors border hover:opacity-80 bg-dark border-dark-border text-light"
                 onClick={handleGoogleSignup}
               >
-                <Mail className="w-5 h-5 mr-2" />
+                <Image
+                  src={"/google_icon.svg"}
+                  alt="Google Icon"
+                  width={25}
+                  height={25}
+                  className="mr-2 text-light"
+                />
                 Continue with Google
               </button>
             </div>

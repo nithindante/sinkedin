@@ -6,7 +6,7 @@ export default function Header() {
     <header className="bg-dark-secondary border-b border-dark-border px-0 py-3 sticky top-0 z-50">
       <div className="max-w-[800px] mx-auto flex items-center justify-between px-6">
         <Link
-          href="/"
+          href="/feed"
           className="text-[1.8rem] font-bold text-light no-underline"
         >
           S<strike className="text-accent no-underline">in</strike>kedIn

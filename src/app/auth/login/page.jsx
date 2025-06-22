@@ -46,7 +46,7 @@ export default function LoginPage() {
 
       // 3. More specific check and better redirect pattern
       if (data.user) {
-        router.push("/feed")
+        router.replace("/feed")
         router.refresh() // Ensures layout re-renders with new auth state
       }
     } catch (error) {
@@ -63,7 +63,7 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "http://localhost:3000/api/auth/callback", // Adjust this URL as needed
+        redirectTo: `${NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
       },
     })
 
@@ -74,7 +74,7 @@ export default function LoginPage() {
 
     // Handle successful Google login if needed
     if (data.user) {
-      router.push("/")
+      router.push("/feed")
       router.refresh() // Ensures layout re-renders with new auth state
     }
   }

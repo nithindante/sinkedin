@@ -82,7 +82,7 @@ export default function SignupPage() {
         // This is where Supabase will redirect the user back to your app
         // after they have signed in with Google.
         // It MUST be in your Supabase project's list of allowed Redirect URLs.
-        redirectTo: "http://localhost:3000/api/auth/callback",
+        redirectTo: `${NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
       },
     })
   }

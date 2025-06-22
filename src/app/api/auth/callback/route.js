@@ -29,7 +29,7 @@ export async function GET(request) {
       if (isNewUser) {
         return NextResponse.redirect(`${origin}/welcome`)
       } else {
-        return NextResponse.redirect(`${origin}/`)
+        return NextResponse.redirect(`${origin}/feed`)
       }
     }
     return NextResponse.redirect(`${origin}/auth/auth-code-error`) // TODO: Create this page

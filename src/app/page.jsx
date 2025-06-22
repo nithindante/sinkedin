@@ -1,7 +1,7 @@
 "use client"
 
-import Link from 'next/link';
-import { Briefcase, Users, MessageSquare, TrendingUp } from 'lucide-react';
+import Link from "next/link"
+import { Briefcase, Users, MessageSquare, TrendingUp } from "lucide-react"
 
 export default function Home() {
   return (
@@ -15,21 +15,22 @@ export default function Home() {
                 S<strike className="text-accent no-underline">in</strike>kedIn
               </h1>
               <p className="text-light-secondary text-xl mb-6">
-                Where careers go to die (and get roasted)
+                Linkedin's Darker, Funnier and More Honest Cousin
               </p>
               <p className="text-gray-300 mb-8 text-lg">
-                Join the most brutally honest professional network. Share your fails,
-                get roasted, and laugh at others' career disasters.
+                Job hunt got you feeling like a melted candle? LinkedIn feed
+                look like a parade of humblebrags you can't relate to?{" "}
+                <b>Welcome home.</b>
               </p>
               <div className="space-x-4">
-                <Link 
-                  href="/signup" 
+                <Link
+                  href="/auth/signup"
                   className="bg-accent hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
                 >
                   Join the Disaster
                 </Link>
                 <Link
-                  href="/welcome"
+                  href="/feed"
                   className="bg-gray-700 hover:bg-gray-600 border border-dark-border text-light px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
                 >
                   Explore the Chaos
@@ -46,9 +47,12 @@ export default function Home() {
                       Fair Warning
                     </h3>
                     <p className="text-gray-300 text-sm leading-relaxed">
-                      This isn't your typical professional network. We celebrate failures,
-                      embrace awkwardness, and turn career disasters into comedy gold.
-                      If you can't handle brutal honesty and dark humor, LinkedIn is that way →
+                      This is the anti-LinkedIn. We swap horror stories, not
+                      business cards. Expect dark humor, zero sugar-coating, and
+                      a healthy dose of schadenfreude. If you're looking for
+                      motivational pep talks, you've taken a wrong turn at
+                      Albuquerque. LinkedIn is down the hall, to the left, next
+                      to the crushing existential dread.
                     </p>
                   </div>
                 </div>
@@ -61,29 +65,32 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-20 bg-dark">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-16 text-light">Why Choose <span className="text-light">
-            S<strike className="text-accent no-underline">in</strike>kedIn
-          </span></h2>
+          <h2 className="text-4xl font-bold text-center mb-16 text-light">
+            Why Choose{" "}
+            <span className="text-light">
+              S<strike className="text-accent no-underline">in</strike>kedIn
+            </span>
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard 
+            <FeatureCard
               icon={<Briefcase className="w-8 h-8" />}
-              title="Career Catastrophes"
-              description="Share your most epic interview fails and rejection stories"
+              title="Unleash Your Career Catastrophes"
+              description="Got soul-crushing rejection letters? Interviewed with your fly down (we've all been there... maybe)? This is your stage. Your most cringeworthy moments are pure gold here."
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<Users className="w-8 h-8" />}
-              title="Failure Network"
-              description="Connect with fellow professional disasters"
+              title="Find Your Failure Family"
+              description="You're not the only one whose career path looks like a toddler's scribbles. Connect with fellow 'professional disasters' who actually get it. No judgment, just shared pain and dark humor."
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<MessageSquare className="w-8 h-8" />}
-              title="Premium Roasts"
-              description="Get and give brutally honest feedback on your career choices"
+              title="Brace for Brutal (but Brilliant) Roasts"
+              description="Post your professional predicaments and let the community serve up some lovingly harsh truths and witty takedowns. It's feedback, Sinkedin style – sharper, funnier, and surprisingly useful."
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<TrendingUp className="w-8 h-8" />}
-              title="Anti-Success Stories"
-              description="Learn what not to do from others' magnificent mistakes"
+              title="Master the Art of Anti-Success"
+              description="Why make your own mistakes when you can learn from the glorious flameouts of others? Consider this your educational archive of career cautionary tales. It’s research... for what NOT to do."
             />
           </div>
         </div>
@@ -92,13 +99,15 @@ export default function Home() {
       {/* Call to Action Section */}
       <section className="py-20 bg-dark-secondary border-t border-dark-border">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-6 text-light">Ready to Embrace the Chaos?</h2>
+          <h2 className="text-4xl font-bold mb-6 text-light">
+            Ready to Embrace the Chaos?
+          </h2>
           <p className="text-light-secondary text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of professionals who've given up on maintaining a perfect image.
-            It's time to get real about your career disasters.
+            Join thousands of professionals who've given up on maintaining a
+            perfect image. It's time to get real about your career disasters.
           </p>
-          <Link 
-            href="/signup"
+          <Link
+            href="/auth/signup"
             className="bg-accent hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             Start Your Downfall
@@ -106,17 +115,15 @@ export default function Home() {
         </div>
       </section>
     </div>
-  );
+  )
 }
 
 function FeatureCard({ icon, title, description }) {
   return (
     <div className="bg-dark-secondary border border-dark-border p-6 rounded-lg hover:border-accent transition-colors">
-      <div className="text-accent mb-4 flex justify-center">
-        {icon}
-      </div>
+      <div className="text-accent mb-4 flex justify-center">{icon}</div>
       <h3 className="text-light text-xl font-semibold mb-3">{title}</h3>
       <p className="text-light-secondary">{description}</p>
     </div>
-  );
+  )
 }

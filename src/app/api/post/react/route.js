@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-// TODO: Start from reaction click not updating
-
 export async function POST(request) {
   try {
     const supabase = await createClient()

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Camera, RefreshCw, User, ArrowRight, X } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import Image from "next/image"
 import toast from "react-hot-toast"
 import { createClient } from "@/lib/supabase/client"
@@ -11,7 +11,7 @@ import axios from "axios"
 
 export default function Page() {
   const router = useRouter()
-  const [username, setUsername] = useState("DisasterPro42") // TODO: Find better default username
+  const [username, setUsername] = useState("")
   const [headline, setHeadline] = useState(null)
   const [bio, setBio] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
@@ -19,30 +19,55 @@ export default function Page() {
   const [loading, setLoading] = useState(false)
 
   // Generate random usernames for fun
-  // TODO: Find better
-  const randomUsernames = [
-    "FailureKing99",
-    "RejectMaster",
-    "InterviewGhost",
-    "CareerChaos",
-    "EpicFailBot",
-    "DisasterPro42",
-    "JoblessJoke",
-    "ResumeReject",
-    "HiringHell",
-    "WorkplaceWreck",
-    "CVCatastrophe",
-    "FailFast404",
-    "BurnoutBuddy",
-    "CrashAndBurn",
-    "DeadEndDave",
+  const randomUsernamesBase = [
+    "EpicFailAlchemist",
+    "ChiefMishapOfficer",
+    "GrandMasterOfGoofs",
+    "RejectRonin",
+    "InterviewPhantom",
+    "CareerComedian",
+    "ChaosCoordinator",
+    "MisfortuneMaven",
+    "SetbackSamurai",
+    "BlunderBaron",
+    "ReplyAllRegret",
+    "CtrlAltDefeated",
+    "DeadlineDemon",
+    "ZoomMuteVictim",
+    "CoffeeSpillPro",
+    "ImposterSyndromeIncarnate",
+    "BurntOutBard",
+    "JustAnotherLayoff",
+    "The404Employee",
+    "VoidStaringChampion",
+    "AbyssLooker",
+    "SirFailsALot",
+    "MissTakesAllowed",
+    "CubicleCthulhu",
+    "HRsNightmareFuel",
+    "EndOfQuarterEntity",
+    "TheGhostOfInterviewsPast",
+    "ResumeBlackHole",
+    "LinkedInLiarRehab",
+    "HopeCrusher",
+    "TheOptimismExtinguisher",
   ]
 
   const generateRandomUsername = () => {
-    const randomName =
-      randomUsernames[Math.floor(Math.random() * randomUsernames.length)]
+    const baseName =
+      randomUsernamesBase[
+        Math.floor(Math.random() * randomUsernamesBase.length)
+      ]
+    // Generate three numbers to append
+    const randomDigits = Math.floor(Math.random() * 1000)
+    const randomName = `${baseName}${randomDigits.toString().padStart(3, "0")}`
     setUsername(randomName)
   }
+
+  useEffect(() => {
+    // Generate a random username when the component mounts
+    generateRandomUsername()
+  }, [])
 
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0]
@@ -88,7 +113,7 @@ export default function Page() {
     if (userError || !user) {
       toast.error("You must be logged in to create a profile")
       setLoading(false)
-      // TODO: Redirect to login page
+      router.replace("/auth/login")
       return
     }
 
@@ -166,13 +191,16 @@ export default function Page() {
     } = await supabase.auth.getUser()
     if (userError || !user) {
       toast.error("You must be logged in to create a profile")
-      // TODO: Redirect to login page
+      router.replace("/auth/login")
+      return
     }
 
     try {
       const response = await axios.post("/api/profile/create", {
         id: user.id,
-        username: "DisasterPro42", // TODO: Change Default username
+        username: username
+          ? username
+          : `User${Math.floor(Math.random() * 1000)}`,
         headline: "",
         bio: "",
         avatar: null, // No avatar for skipped setup
@@ -199,7 +227,8 @@ export default function Page() {
             kedIn!
           </h1>
           <p className="text-lg text-light-secondary">
-            Let's set up your professional disaster profile
+            Let's get your professional disaster profile etched into the
+            Sinkedin hall of shame.
           </p>
         </div>
 
@@ -237,7 +266,8 @@ export default function Page() {
               </label>
             </div>
             <p className="text-sm text-light-secondary mt-2">
-              Upload your best disaster face (optional)
+              Got a pic that screams 'I've made poor life choices'? Share it
+              (optional).
             </p>
           </div>
           {/* Username Section */}
@@ -268,7 +298,7 @@ export default function Page() {
               </button>
             </div>
             <p className="text-xs mt-1 text-light-secondary">
-              This is how other loosers will know you
+              This is how other losers will know you
             </p>
           </div>
           {/* Headline Section Just like linkedin */}
@@ -278,7 +308,7 @@ export default function Page() {
             </label>
             <input
               type="text"
-              value={headline}
+              value={headline ? headline : ""}
               onChange={(e) => setHeadline(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
               onFocus={(e) =>
@@ -287,7 +317,7 @@ export default function Page() {
               onBlur={(e) =>
                 (e.target.style.borderColor = "var(--color-dark-border)")
               }
-              placeholder="Your epic career disaster in a nutshell"
+              placeholder="The TL;DR of Your Downfall"
               maxLength={100}
             />
             <p className="text-xs mt-1 text-light-secondary">
@@ -300,7 +330,7 @@ export default function Page() {
               Flaunt Your Failures (Bio)
             </label>
             <textarea
-              value={bio}
+              value={bio ? bio : ""}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
               className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none bg-dark border-dark-border text-light"
@@ -310,7 +340,7 @@ export default function Page() {
               onBlur={(e) =>
                 (e.target.style.borderColor = "var(--color-dark-border)")
               }
-              placeholder="Tell us about your epic career disasters..."
+              placeholder="Detail your descent into career chaos. Give us the gory details. What went spectacularly wrong? e.g., 'That time I accidentally set off the fire alarm during a board meeting..."
               maxLength={200}
             />
             <p className="text-xs mt-1 text-light-secondary">

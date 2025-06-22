@@ -91,7 +91,7 @@ export default function LoginPage() {
               kedIn
             </h1>
             <p className="mt-2 text-lg text-light-secondary">
-              Welcome back to the chaos
+              Welcome back to the chaos. We saved you a spot by the fire.
             </p>
           </div>
           <div
@@ -105,11 +105,12 @@ export default function LoginPage() {
               <div className="mr-3 mt-1 text-accent">🎭</div>
               <div>
                 <h3 className="font-semibold mb-2 text-accent">
-                  Ready for Round 2?
+                  Ready for More Shenanigans?
                 </h3>
                 <p className="text-sm leading-relaxed text-light">
-                  Time to dive back into the beautiful mess of career disasters,
-                  epic fails, and solidarity through shared suffering.
+                  Time to dive back into today's collection of cringe,
+                  commiseration, and career cautionary tales. Your daily dose of
+                  'it could be worse' awaits.
                 </p>
               </div>
             </div>
@@ -117,15 +118,23 @@ export default function LoginPage() {
           <div className="space-y-3">
             <div className="flex items-center text-light">
               <div className="w-2 h-2 rounded-full mr-3 bg-accent"></div>
-              <span className="text-sm">247 new epic fails shared today</span>
+              <span className="text-sm">
+                LinkedIn shows the highlight reel. We live in the outtakes.
+              </span>
             </div>
             <div className="flex items-center text-light">
               <div className="w-2 h-2 rounded-full mr-3 bg-accent"></div>
-              <span className="text-sm">Your roasting skills are needed</span>
+              <span className="text-sm">
+                Find your people - the ones who also hit 'Reply All' on that
+                email.
+              </span>
             </div>
             <div className="flex items-center text-light">
               <div className="w-2 h-2 rounded-full mr-3 bg-accent"></div>
-              <span className="text-sm">3 people related to your pain</span>
+              <span className="text-sm">
+                Your daily reminder that someone, somewhere, is failing harder
+                than you
+              </span>
             </div>
           </div>
         </div>
@@ -146,7 +155,7 @@ export default function LoginPage() {
 
           <div className="rounded-lg border p-8 bg-dark-secondary border-dark-border">
             <h2 className="text-2xl font-bold mb-6 text-center text-light">
-              Welcome Back, Looser
+              Welcome Back, Loser
             </h2>
 
             {/* Social Login Buttons */}
@@ -221,7 +230,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* // TODO v2: Add reset password */}
+              {/* <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -239,7 +249,7 @@ export default function LoginPage() {
                 >
                   Forgot password?
                 </a>
-              </div>
+              </div> */}
 
               {/* 5. Change button type to "submit" */}
               <button

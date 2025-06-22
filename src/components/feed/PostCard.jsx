@@ -15,7 +15,7 @@ export default function PostCard({ post, currentUserId }) {
     reaction,
   } = post
 
-  const username = author?.username || "Anonymous Panda" // TODO: Find better anonymous name
+  const username = author?.username || "AnonymousPanda"
   const avatar_url = author?.avatar_url || null
 
   const timeAgo = formatDistanceToNow(new Date(created_at), {

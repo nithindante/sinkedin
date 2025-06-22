@@ -64,7 +64,7 @@ export default function Header() {
             />
           </Link>
         ) : (
-          <Link href="/feed/login" className="text-light no-underline">
+          <Link href="/auth/login" className="text-light no-underline">
             <button className="bg-accent text-white border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
               Login
             </button>

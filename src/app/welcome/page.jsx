@@ -168,7 +168,7 @@ export default function Page() {
       if (response.status === 201) {
         toast.success("Profile created successfully!")
         // Redirect to the main app or profile page
-        router.replace("/") // Assuming this is the main app route
+        router.replace("/feed")
       } else {
         toast.error("Failed to create profile")
       }

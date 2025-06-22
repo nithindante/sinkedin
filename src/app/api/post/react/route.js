@@ -33,15 +33,53 @@ export async function POST(request) {
         { status: 403 }
       )
     }
-    // Upsert the reaction into the database
-    const { data, error } = await supabase.from("reactions").upsert({
-      post_id: postId,
-      user_id: userId,
-      reaction: emojiName,
-    })
-    if (error) {
-      console.error("Error upserting reaction:", error)
-      return NextResponse.json({ error: "Failed to react." }, { status: 500 })
+
+    const { data: existingReaction, error: fetchError } = await supabase
+      .from("reactions")
+      .select("reaction")
+      .eq("post_id", postId)
+      .eq("user_id", userId)
+      .single() // Use .single() to get one record or null
+
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // PGRST116 is the error for "No rows found", which is not a server error for us.
+      console.error("Error fetching existing reaction:", fetchError)
+      return NextResponse.json(
+        { error: "Failed to check reaction." },
+        { status: 500 }
+      )
+    }
+
+    // 2. If the user clicked the same emoji again, delete the reaction
+    if (existingReaction && existingReaction.reaction === emojiName) {
+      const { error: deleteError } = await supabase
+        .from("reactions")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", userId)
+
+      if (deleteError) {
+        console.error("Error deleting reaction:", deleteError)
+        return NextResponse.json(
+          { error: "Failed to remove reaction." },
+          { status: 500 }
+        )
+      }
+    } else {
+      // 3. Otherwise, upsert the new reaction (adds or changes the reaction)
+      const { error: upsertError } = await supabase.from("reactions").upsert({
+        post_id: postId,
+        user_id: userId,
+        reaction: emojiName,
+      })
+
+      if (upsertError) {
+        console.error("Error upserting reaction:", upsertError)
+        return NextResponse.json(
+          { error: "Failed to add reaction." },
+          { status: 500 }
+        )
+      }
     }
 
     return NextResponse.json(

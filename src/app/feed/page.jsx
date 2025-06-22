@@ -11,7 +11,7 @@ import axios from "axios"
 const fetchPosts = async () => {
   try {
     const response = await axios.get("/api/post/all")
-    console.log("Fetched posts:", response.data.posts)
+    // console.log("Fetched posts:", response.data.posts)
     return response.data.posts
   } catch (error) {
     console.error("Error fetching posts:", error)

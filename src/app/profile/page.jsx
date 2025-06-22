@@ -13,7 +13,7 @@ async function getCurrentUser() {
 
   if (!data?.user) {
     // If no user is logged in, return null
-    console.log("No user is logged in.")
+    // console.log("No user is logged in.")
     return null
   }
 
@@ -27,7 +27,7 @@ export default async function MyProfilePage() {
 
   if (!userId) {
     // If no user is logged in, redirect to the login page
-    console.log("Redirecting to login page...")
+    // console.log("Redirecting to login page...")
     redirect("/login")
   }
 

@@ -65,7 +65,7 @@ export default function SignupPage() {
         return
       }
     } catch (error) {
-      console.log("Signup error:", error)
+      console.error("Signup error:", error)
       if (error.response && error.response.data) {
         toast.error(error.response.data.error || "Signup failed")
       } else {

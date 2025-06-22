@@ -181,7 +181,7 @@ export default function Page() {
   }
 
   const handleSkip = async () => {
-    console.log("Skipped setup, using defaults")
+    // console.log("Skipped setup, using defaults")
     // Navigate to main app with default values
     // take default username and send request to create profile
     const supabase = createClient()

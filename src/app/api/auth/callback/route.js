@@ -24,7 +24,7 @@ export async function GET(request) {
         !user.last_sign_in_at ||
         new Date(user.last_sign_in_at).getTime() <=
           new Date(user.created_at).getTime() + 10000
-      console.log("Is new user:", isNewUser)
+      // console.log("Is new user:", isNewUser)
 
       if (isNewUser) {
         return NextResponse.redirect(`${origin}/welcome`)

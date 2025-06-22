@@ -25,8 +25,11 @@ S<strike>in</strike>kedIn . strike through the "in" will be accent color #e03131
 - **Profile Basics**: Simple profiles with usernames, bios, and a "Biggest L" section.
 
 ## V2 Launch Features:
-- **SinkedIn Badges**: Earn badges for various failures, displayed on profiles.
 - **Comment Section**: Users can comment on posts with witty one-liners or roast reactions.
+- **Sinkedin Official Profile**: It will automatically comment on every post.
+- **Load Feed in Chunks**: Infinite scroll for a smoother experience.
+- **Edit Profile**: User can edit their profile with a username, bio, and profile picture.
+- **SinkedIn Badges**: Earn badges for various failures, displayed on profiles.
 
 ## TODOs:
 > When pushing to production:

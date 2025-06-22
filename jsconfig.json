@@ -1,7 +1,11 @@
+// jsconfig.json
 {
   "compilerOptions": {
+    "baseUrl": ".", // Or "src" if your source files are strictly within src
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"] // This is the crucial part
     }
-  }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "exclude": ["node_modules"]
 }

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
+const INITIAL_COMMENT_FETCH_COUNT = 1
+
 // Fetch all posts with username and avatar URL
 export async function GET() {
   try {
@@ -10,25 +12,40 @@ export async function GET() {
       .from("posts")
       .select(
         `
+        id,
+        user_id,
+        body,
+        is_anonymous,
+        created_at,
+        profiles!posts_user_id_fkey (
           id,
+          username,
+          avatar_url
+        ),
+        reactions (
           user_id,
-          body,
-          is_anonymous,
-          created_at,
-          profiles!posts_user_id_fkey (
+          reaction,
+          profiles!reactions_user_id_fkey (
             id,
             username,
             avatar_url
-          ),
-          reactions (
-            user_id,
-            reaction,
-            created_at
           )
-        `
+        ),
+        comments (
+          id,
+          body,
+          created_at,
+          profiles!comments_user_id_fkey (
+            id,
+            username,
+            avatar_url
+          )
+        )
+      `
       )
       .order("created_at", { ascending: false })
-
+      .order("created_at", { referencedTable: "comments", ascending: false })
+      .limit(INITIAL_COMMENT_FETCH_COUNT, { foreignTable: "comments" })
     if (error) {
       console.error("Error fetching posts:", error)
       return NextResponse.json(
@@ -50,6 +67,20 @@ export async function GET() {
         reactionCounts[reaction.reaction]++
       })
 
+      // Transform comments to match expected frontend structure
+      const formattedComments = post.comments
+        .map((comment) => ({
+          id: comment.id,
+          body: comment.body,
+          created_at: comment.created_at,
+          author: {
+            id: comment.profiles.id,
+            username: comment.profiles.username,
+            avatar_url: comment.profiles.avatar_url,
+          },
+        }))
+        .reverse() // Reverse to show oldest of the latest first
+
       return {
         id: post.id,
         user_id: post.user_id,
@@ -65,6 +96,7 @@ export async function GET() {
             },
         reaction_counts: reactionCounts,
         reaction: post.reactions,
+        comments: formattedComments,
       }
     })
 

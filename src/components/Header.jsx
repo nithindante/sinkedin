@@ -47,6 +47,7 @@ export default function Header() {
         <Link
           href="/feed"
           className="text-[1.8rem] font-bold text-light no-underline"
+          scroll={false}
         >
           S<strike className="text-accent no-underline">in</strike>kedIn
         </Link>
@@ -54,7 +55,11 @@ export default function Header() {
         {isLoading ? (
           <div className="w-[40px] h-[40px] bg-dark-border rounded-full animate-pulse" />
         ) : profile ? (
-          <Link href="/profile" className="w-[40px] h-[40px] relative">
+          <Link
+            href="/profile"
+            className="w-[40px] h-[40px] relative"
+            scroll={false}
+          >
             <Image
               // Use the fetched avatar_url, with a fallback
               src={profile.avatar_url || "/default_avatar.jpg"}
@@ -64,7 +69,11 @@ export default function Header() {
             />
           </Link>
         ) : (
-          <Link href="/auth/login" className="text-light no-underline">
+          <Link
+            href="/auth/login"
+            className="text-light no-underline"
+            scroll={false}
+          >
             <button className="bg-accent text-white border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
               Login
             </button>

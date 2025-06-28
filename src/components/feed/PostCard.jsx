@@ -25,7 +25,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
   const [counts, setCounts] = useState(reaction_counts)
 
   const reactionToEmojiMap = {
-    F: "F",
+    Laugh: "😆",
     Clown: "🤡",
     Skull: "💀",
     Relatable: "🤝",
@@ -88,6 +88,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
 
   const username = author?.username || "AnonymousPanda"
   const avatar_url = author?.avatar_url || "/default_avatar.jpg"
+
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
 
   return (
@@ -100,7 +101,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
         >
           <div className="w-10 h-10 bg-dark-border rounded-full">
             <Image
-              src={is_anonymous ? "/default_avatar.jpg" : avatar_url}
+              src={is_anonymous ? "/anon_panda.jpg" : avatar_url}
               alt="User Avatar"
               width={40}
               height={40}
@@ -134,8 +135,8 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
             return (
               <button
                 key={emojiName}
-                className={`flex items-center gap-2 text-light-secondary text-sm hover:text-accent transition-colors duration-200 ${
-                  hasReacted ? "text-accent" : ""
+                className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
+                  hasReacted ? "bg-white/10 text-light p-1 rounded-md" : ""
                 }`}
                 onClick={() => handleReactionClick(emojiName)}
               >

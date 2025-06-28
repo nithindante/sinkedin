@@ -57,7 +57,7 @@ export async function GET() {
     const transformedPosts = posts.map((post) => {
       // Count reactions by type
       const reactionCounts = {
-        F: 0,
+        Laugh: 0,
         Clown: 0,
         Skull: 0,
         Relatable: 0,

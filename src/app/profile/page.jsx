@@ -9,7 +9,7 @@ async function getCurrentUser() {
 
   const { data } = await supabase.auth.getUser()
 
-  console.log("Current user data:", data)
+  // console.log("Current user data:", data)
 
   if (!data?.user) {
     // If no user is logged in, return null

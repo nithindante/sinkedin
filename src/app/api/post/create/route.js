@@ -1,5 +1,17 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { Filter } from "bad-words"
+
+// Initialize the bad words filter
+const filter = new Filter()
+
+const censorWord = (word) => {
+  // Replace the word with asterisks, maintaining the original length
+  if (word.length <= 2) {
+    return "*".repeat(word.length) // For short words, just asterisks
+  }
+  return word[0] + "*".repeat(word.length - 2) + word[word.length - 1]
+}
 
 export async function POST(request) {
   try {
@@ -12,6 +24,13 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    // We split the content into words, check each one, and then rejoin them.
+    // This is more precise than a simple replace and handles punctuation better.
+    const censoredContent = content
+      .split(" ")
+      .map((word) => (filter.isProfane(word) ? censorWord(word) : word))
+      .join(" ")
 
     const supabase = await createClient()
     const { data: session, error: sessionError } = await supabase.auth.getUser()
@@ -43,7 +62,7 @@ export async function POST(request) {
       .from("posts")
       .insert({
         user_id: userId,
-        body: content.trim(),
+        body: censoredContent.trim(),
         is_anonymous: isAnonymous,
       })
       .select()

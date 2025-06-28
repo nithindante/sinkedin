@@ -1,10 +1,12 @@
+"use client"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
 
-export default function PostCard({ post, currentUserId }) {
+// --- Main PostCard Component ---
+export default function PostCard({ post, currentUserId, currentUserAvatar }) {
   const {
     id,
     author,
@@ -13,14 +15,14 @@ export default function PostCard({ post, currentUserId }) {
     is_anonymous,
     reaction_counts,
     reaction,
+    comments: initialComments,
   } = post
 
-  const username = author?.username || "AnonymousPanda"
-  const avatar_url = author?.avatar_url || null
+  // State for managing comments
+  const [comments, setComments] = useState(initialComments || [])
 
-  const timeAgo = formatDistanceToNow(new Date(created_at), {
-    addSuffix: true,
-  })
+  const [reactedEmoji, setReactedEmoji] = useState(null)
+  const [counts, setCounts] = useState(reaction_counts)
 
   const reactionToEmojiMap = {
     F: "F",
@@ -35,51 +37,30 @@ export default function PostCard({ post, currentUserId }) {
     return userReaction ? userReaction.reaction : null
   }
 
-  const [reactedEmoji, setReactedEmoji] = useState(findUserReaction())
-
-  // --- 2. NEW: Add state for reaction counts to allow optimistic updates ---
-  const [counts, setCounts] = useState(reaction_counts)
-
-  // This hook will run when the component mounts and whenever the props
-  // `currentUserId` or `post` change. This solves the race condition where
-  // the user ID might not be available on the very first render.
   useEffect(() => {
     setReactedEmoji(findUserReaction())
     setCounts(reaction_counts)
+    setComments(initialComments || [])
   }, [currentUserId, post])
 
   const handleReactionClick = async (emojiName) => {
-    // if the user is not logged in, do nothing
-    if (!currentUserId) {
-      return
-    }
+    if (!currentUserId) return
 
     const originalReactedEmoji = reactedEmoji
     const originalCounts = { ...counts }
-
-    // Determine the next state before updating
     const newReactedEmoji =
       originalReactedEmoji === emojiName ? null : emojiName
-
     const newCounts = { ...counts }
 
     if (originalReactedEmoji === emojiName) {
-      // Case 1: User is UN-REACTING (clicking the same emoji again)
-      // Decrease the count of the clicked emoji.
       newCounts[emojiName]--
     } else if (originalReactedEmoji) {
-      // Case 2: User is CHANGING their reaction
-      // Decrease the count of the OLD emoji.
       newCounts[originalReactedEmoji]--
-      // Increase the count of the NEW emoji.
       newCounts[emojiName]++
     } else {
-      // Case 3: User is REACTING for the first time
-      // Increase the count of the new emoji.
       newCounts[emojiName]++
     }
 
-    // Optimistically update the UI
     setReactedEmoji(newReactedEmoji)
     setCounts(newCounts)
 
@@ -88,36 +69,38 @@ export default function PostCard({ post, currentUserId }) {
         emojiName,
         postId: id,
       })
-
       if (response.status !== 201) {
-        // If API call fails, revert the state to the original
         setReactedEmoji(originalReactedEmoji)
         setCounts(originalCounts)
-        console.error("Failed to react:", response.data.error)
       }
     } catch (error) {
-      // If there's any other error, revert the state
       setReactedEmoji(originalReactedEmoji)
       setCounts(originalCounts)
       console.error("Error reacting to post:", error)
     }
   }
 
+  // --- New function to handle optimistic UI update for new comments ---
+  const handleCommentPosted = (newComment) => {
+    // Add the new comment to the top of the list
+    setComments((prevComments) => [newComment, ...prevComments])
+  }
+
+  const username = author?.username || "AnonymousPanda"
+  const avatar_url = author?.avatar_url || "/default_avatar.jpg"
+  const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
+
   return (
     <article className="bg-dark-secondary border border-dark-border rounded-lg p-6">
-      {/* Post Header */}
-      <div className="flex items-center gap-4 mb-4">
+      {/* Post Header: Avatar and Author Info */}
+      <div className="flex items-start gap-4">
         <Link
           href={is_anonymous ? "#" : `/profile/${author.id}`}
           className="flex-shrink-0"
         >
-          <div className="w-10 h-10 bg-dark-border rounded-full flex items-center justify-center text-light text-xl">
+          <div className="w-10 h-10 bg-dark-border rounded-full">
             <Image
-              src={
-                is_anonymous
-                  ? "/default_avatar.jpg"
-                  : avatar_url || "/default_avatar.jpg"
-              }
+              src={is_anonymous ? "/default_avatar.jpg" : avatar_url}
               alt="User Avatar"
               width={40}
               height={40}
@@ -125,96 +108,267 @@ export default function PostCard({ post, currentUserId }) {
             />
           </div>
         </Link>
-        <div className="flex-1">
-          <Link
-            href={is_anonymous ? "#" : `/profile/${author.id}`}
-            className="font-semibold text-light hover:underline"
-          >
-            {is_anonymous ? "Anonymous Panda" : username}
-          </Link>
-          <div className="text-light-secondary text-xs">{timeAgo}</div>
+        <div className="">
+          <div className="flex-1">
+            <Link
+              href={is_anonymous ? "#" : `/profile/${author.id}`}
+              className="font-semibold text-light hover:underline"
+            >
+              {is_anonymous ? "Anonymous Panda" : username}
+            </Link>
+            <div className="text-light-secondary text-xs">{timeAgo}</div>
+          </div>
+
+          {/* Post Body */}
+          <div className="mt-4 text-base text-light whitespace-pre-wrap">
+            {body}
+          </div>
         </div>
       </div>
 
-      {/* Post Content */}
-      <div className="mb-4 text-base text-light whitespace-pre-wrap">
-        {body}
-      </div>
+      <div>
+        <div className="flex gap-4 pt-5 pl-3 flex-wrap">
+          {Object.entries(counts).map(([emojiName, count]) => {
+            const emoji = reactionToEmojiMap[emojiName] || emojiName
+            const hasReacted = reactedEmoji === emojiName
+            return (
+              <button
+                key={emojiName}
+                className={`flex items-center gap-2 text-light-secondary text-sm hover:text-accent transition-colors duration-200 ${
+                  hasReacted ? "text-accent" : ""
+                }`}
+                onClick={() => handleReactionClick(emojiName)}
+              >
+                <span className="text-xl">{emoji}</span>
+                <span className="font-medium">{count}</span>
+              </button>
+            )
+          })}
+        </div>
 
-      {/* Post Actions/Reactions - with counts and updated styling */}
-      <div className="flex gap-2 pt-3 border-t  border-dark-border flex-wrap">
-        {Object.entries(counts).map(([emojiName, count]) => {
-          const emoji = reactionToEmojiMap[emojiName] || emojiName
-          const hasReacted = reactedEmoji === emojiName
-          return (
-            <button
-              key={emojiName}
-              className={`flex items-center gap-1 text-light-secondary text-sm hover:text-light transition-colors p-2 rounded-md ${
-                hasReacted ? "bg-white/10 text-light" : ""
-              }`}
-              onClick={() => handleReactionClick(emojiName)}
-            >
-              <span className="text-lg">{emoji}</span>
-              <span>{count}</span>
-            </button>
-          )
-        })}
+        <CommentSection
+          postId={id}
+          initialComments={comments}
+          currentUserAvatar={currentUserAvatar}
+          onCommentPosted={handleCommentPosted}
+        />
       </div>
+    </article>
+  )
+}
 
-      {/* Move Comment Input to v2*/}
-      {/* <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-dark-border rounded-full flex items-center justify-center text-base flex-shrink-0 text-light">
+// --- Helper Component: Manages the list of comments and expand/collapse logic ---
+function CommentSection({
+  postId,
+  initialComments,
+  currentUserAvatar,
+  onCommentPosted,
+}) {
+  const [comments, setComments] = useState(initialComments)
+  const [isLoading, setIsLoading] = useState(false)
+  const [moreCommentsAvailable, setMoreCommentsAvailable] = useState(true)
+
+  // Update local state if the initial comments from props change
+  useEffect(() => {
+    setComments(initialComments)
+  }, [initialComments])
+
+  const COMMENTS_TO_LOAD_AT_ONCE = 3
+
+  const handleLoadMore = async () => {
+    setIsLoading(true)
+    try {
+      const response = await axios.get("/api/post/comment/fetch", {
+        params: {
+          postId,
+          offset: comments.length,
+          limit: COMMENTS_TO_LOAD_AT_ONCE,
+        },
+      })
+
+      if (response.data.comments.length < COMMENTS_TO_LOAD_AT_ONCE) {
+        setMoreCommentsAvailable(false) // No more comments to load
+      }
+      if (response.data.comments.length === 0) {
+        setMoreCommentsAvailable(false) // No more comments to load
+        return
+      }
+
+      // Append new comments to the existing list
+      setComments((prevComments) => [
+        ...prevComments,
+        ...response.data.comments,
+      ])
+    } catch (error) {
+      console.error("Failed to load more comments:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (!comments || comments.length === 0) {
+    return (
+      <div className="mt-4 pt-4 border-t border-dark-border">
+        <AddComment
+          currentUserAvatar={currentUserAvatar}
+          postId={postId}
+          onCommentPosted={onCommentPosted} // Pass handler to AddComment
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 pt-4 border-t border-dark-border flex flex-col gap-4">
+      <AddComment
+        currentUserAvatar={currentUserAvatar}
+        postId={postId}
+        onCommentPosted={onCommentPosted} // Pass handler to AddComment
+      />
+
+      {/* Reverse the comments array for display to show newest first */}
+      {comments
+        .slice()
+        .reverse()
+        .map((comment) => (
+          <Comment key={comment.id} comment={comment} />
+        ))}
+
+      {/* Logic for showing "Load More" button */}
+      <div className="flex gap-4">
+        {moreCommentsAvailable && comments.length > 0 && (
+          <button
+            onClick={handleLoadMore}
+            disabled={isLoading || !moreCommentsAvailable}
+            className="text-sm text-light-secondary hover:text-light transition-colors self-start disabled:cursor-wait"
+          >
+            {isLoading ? "Loading..." : "Load more comments"}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// --- Helper Component: A single comment ---
+function Comment({ comment }) {
+  const { author, avatar_url, body, created_at } = comment
+  const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
+
+  return (
+    <div className="flex items-start gap-3">
+      <Link href={`/profile/${author.id}`} className="flex-shrink-0 mt-1">
+        <Image
+          src={avatar_url || "/default_avatar.jpg"}
+          alt={`${author.username}'s avatar`}
+          width={32}
+          height={32}
+          className="rounded-full object-cover"
+        />
+      </Link>
+      <div className="flex-1 bg-dark px-3 py-2 rounded-lg">
+        <div className="flex items-baseline gap-2">
+          <Link
+            href={`/profile/${author.id}`}
+            className="font-semibold text-light text-sm hover:underline"
+          >
+            {author.username}
+          </Link>
+          <span className="text-light-secondary text-xs">{timeAgo}</span>
+        </div>
+        <p className="text-light whitespace-pre-wrap mt-1 text-sm">{body}</p>
+      </div>
+    </div>
+  )
+}
+
+// --- Helper Component: The "Add a comment" input field ---
+function AddComment({ currentUserAvatar, postId, onCommentPosted }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [commentText, setCommentText] = useState("")
+  const [isCommentPosting, setIsCommentPosting] = useState(false)
+
+  const handlePostComment = async () => {
+    if (!commentText.trim()) return
+    try {
+      setIsCommentPosting(true)
+      const response = await axios.post("/api/post/comment/create", {
+        postId: postId,
+        comment: commentText,
+      })
+      console.log(response.data)
+      if (response.status === 201) {
+        // Reset the form after posting
+        onCommentPosted(response.data)
+        setCommentText("")
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error("Error posting comment:", error)
+    } finally {
+      setIsCommentPosting(false)
+    }
+  }
+
+  if (!isEditing) {
+    return (
+      // The placeholder view
+      <div
+        className="flex items-center gap-3"
+        onClick={() => setIsEditing(true)}
+      >
+        <div className="flex-shrink-0">
           <Image
-            src="/default_avatar.jpg"
+            src={currentUserAvatar || "/default_avatar.jpg"}
             alt="Your Avatar"
             width={32}
             height={32}
             className="rounded-full object-cover"
           />
         </div>
-        <div className="bg-dark w-full px-4 py-2.5 rounded-full text-light-secondary text-sm cursor-pointer border border-dark-border hover:border-light-secondary transition-colors">
+        <div className="bg-dark w-full px-4 py-2.5 rounded-lg text-light-secondary text-sm cursor-pointer border border-dark-border hover:border-light-secondary transition-colors">
           Add a comment...
         </div>
-      </div> */}
+      </div>
+    )
+  }
 
-      {/* --- NEW STATIC COMMENT SECTION --- */}
-      {/* <div className="mt-4 pt-4 border-t border-dark-border flex flex-col gap-4">
-        <Comment
-          author="CleverCoyote"
-          avatar="/default_avatar.jpg"
-          text="This is a great point, totally agree with you on this!"
-          timestamp="2h ago"
+  // The active editing view
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 mt-1">
+        <Image
+          src={currentUserAvatar || "/default_avatar.jpg"}
+          alt="Your Avatar"
+          width={32}
+          height={32}
+          className="rounded-full object-cover"
         />
-        <Comment
-          author="Anonymous Squirrel"
-          avatar="/default_avatar.jpg" // Using the panda as a generic anonymous avatar
-          text="Hmm, I'm not so sure. Have you considered the other side of the argument?"
-          timestamp="1h ago"
+      </div>
+      <div className="flex-1">
+        <textarea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder="Add a comment..."
+          className="w-full bg-dark border border-dark-border rounded-lg p-2 text-light text-sm resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-accent"
+          autoFocus
         />
-      </div> */}
-    </article>
+        <div className="flex justify-end items-center gap-2 mt-2">
+          <button
+            onClick={() => setIsEditing(false)}
+            className="text-sm text-light-secondary hover:text-light transition-colors px-3 py-1"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handlePostComment}
+            disabled={!commentText.trim()}
+            className="bg-accent text-white border-none px-4 py-1.5 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors disabled:bg-light-secondary/50 disabled:cursor-not-allowed"
+          >
+            {isCommentPosting ? "Posting..." : "Post"}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
-
-// function Comment({ author, avatar, text, timestamp }) {
-//   return (
-//     <div className="flex items-start gap-3">
-//       <div className="w-8 h-8 bg-dark-border rounded-full flex-shrink-0 mt-1">
-//         <Image
-//           src={avatar || "/default_avatar.jpg"}
-//           alt={`${author}'s avatar`}
-//           width={32}
-//           height={32}
-//           className="rounded-full object-cover"
-//         />
-//       </div>
-//       <div className="flex-1 bg-dark px-4 py-2 rounded-lg">
-//         <div className="flex items-center gap-2">
-//           <span className="font-semibold text-light text-sm">{author}</span>
-//           <span className="text-light-secondary text-xs">{timestamp}</span>
-//         </div>
-//         <p className="text-light whitespace-pre-wrap mt-1 text-sm">{text}</p>
-//       </div>
-//     </div>
-//   )
-// }

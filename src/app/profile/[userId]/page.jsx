@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { cookies } from "next/headers"
 import EditProfileAndLogout from "@/components/profile/ProfileAction"
+import FollowUnfollowButton from "@/components/profile/FollowUnfollow"
 
 async function getUserProfile(userId) {
   const cookieStore = cookies()
@@ -38,6 +39,58 @@ function formatJoinDate(dateString) {
   })
 }
 
+async function getFollowerCount(userId) {
+  const cookieStore = cookies()
+  const supabase = await createClient(cookieStore)
+
+  const { count, error } = await supabase
+    .from("relationships")
+    .select("follower_id", { count: "exact", head: true }) // Count the number of followers
+    .eq("following_id", userId)
+
+  if (error) {
+    console.error("Error fetching follower count:", error)
+    return 0 // Return 0 in case of error
+  }
+  return count || 0
+}
+
+async function getFollowingCount(userId) {
+  const cookieStore = cookies()
+  const supabase = await createClient(cookieStore)
+
+  const { count, error } = await supabase
+    .from("relationships")
+    .select("following_id", { count: "exact", head: true }) // Count the number of users being followed
+    .eq("follower_id", userId)
+
+  if (error) {
+    console.error("Error fetching following count:", error)
+    return 0 // Return 0 in case of error
+  }
+  return count || 0
+}
+
+// Check if the logged-in user is following the profile being viewed
+async function checkIfFollowing(followerId, followingId) {
+  const cookieStore = cookies()
+  const supabase = await createClient(cookieStore)
+
+  const { data, error } = await supabase
+    .from("relationships")
+    .select("*")
+    .eq("follower_id", followerId)
+    .eq("following_id", followingId)
+    .single()
+
+  if (error && error.code !== "PGRST116") {
+    // PGRST116 means no rows found, which is not an error in this context
+    return false // Default to not following if there's an error
+  }
+
+  return !!data // Convert the result (row count or null) to a boolean
+}
+
 export default async function UserProfilePage({ params }) {
   const { userId } = await params
   const profile = await getUserProfile(userId)
@@ -50,6 +103,16 @@ export default async function UserProfilePage({ params }) {
 
   // Check if the profile being viewed belongs to the logged-in user
   const isOwnProfile = loggedInUser?.id === profile.id
+
+  // Fetch follower and following counts
+  const followerCount = await getFollowerCount(profile.id)
+  const followingCount = await getFollowingCount(profile.id)
+
+  // --- Fetch initial follow status ---
+  let initialIsFollowing = false
+  if (loggedInUser && !isOwnProfile) {
+    initialIsFollowing = await checkIfFollowing(loggedInUser.id, profile.id)
+  }
 
   return (
     <>
@@ -73,8 +136,22 @@ export default async function UserProfilePage({ params }) {
                 Sinking since {formatJoinDate(profile.created_at)}
               </p>
 
+              <div className="mt-6">
+                <FollowUnfollowButton
+                  currentUserId={loggedInUser?.id}
+                  profileUserId={profile.id}
+                  initialIsFollowing={initialIsFollowing}
+                  initialFollowerCount={followerCount}
+                  initialFollowingCount={followingCount}
+                />
+              </div>
+
               {/* Only show Edit and Logout buttons if it's the user's own profile */}
-              {isOwnProfile && <EditProfileAndLogout />}
+              {isOwnProfile && (
+                <div className="mt-6">
+                  <EditProfileAndLogout />
+                </div>
+              )}
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-dark-border">

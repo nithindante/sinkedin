@@ -22,7 +22,7 @@ export default function Home() {
                 look like a parade of humblebrags you can't relate to?{" "}
                 <b>Welcome home.</b>
               </p>
-              <div className="space-x-4">
+              <div className="space-y-2 space-x-4 lg:space-y-0 lg:flex lg:space-x-4">
                 <Link
                   href="/auth/signup"
                   className="bg-accent hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"

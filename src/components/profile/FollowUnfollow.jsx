@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
 import axios from "axios"
 
 export default function FollowUnfollowButton({
@@ -13,10 +12,7 @@ export default function FollowUnfollowButton({
 }) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const [followerCount, setFollowerCount] = useState(initialFollowerCount)
-  const [followingCount, setFollowingCount] = useState(initialFollowingCount)
   const [loading, setLoading] = useState(true)
-
-  const supabase = createClient() // Create Supabase client for browser
 
   // Effect to set initial state
   useEffect(() => {
@@ -76,7 +72,9 @@ export default function FollowUnfollowButton({
           <span className="text-light-secondary ml-1">Hecklers</span>
         </div>
         <div>
-          <span className="text-light font-semibold">{followingCount}</span>
+          <span className="text-light font-semibold">
+            {initialFollowingCount}
+          </span>
           <span className="text-light-secondary ml-1">Heckling</span>
         </div>
       </div>

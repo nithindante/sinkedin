@@ -3,7 +3,6 @@
 > Need to refine these ideas and prioritize over different stages
 
 1. Failure Posts (The Main Feed)
-    - Users post short, witty stories about their job market fails: ghosted interviews, botched cover letters, or that time they accidentally sent a meme to a recruiter.
     - Users can attach memes, GIFs, or screenshots (e.g., a brutal rejection email).
 2. SinkedIn Badges
     - Users earn comedic badges for their failures, like “Ghosted Guru” (5+ ignored applications), “Cover Letter Catastrophe” (shared a cringey letter), or “Interview Imploder” (bombed an interview).
@@ -11,7 +10,7 @@
 3. Roast Reactions
     - Instead of “Like” or “Celebrate,” reactions are snarky: “Oof,” “Been There,” “Savage,” or “Cringe.”
     Users can comment with witty one-liners or pile on the roast.
-4. An AI bot that automatically generates roast comments based on the post content.
+4. An AI bot that automatically generates roast comments based on the post content. (**Sinkedin Official Profile**: It will automatically comment on every post.)
 5. Anonymous Mode
     - Users can post anonymously to share juicy fails without tanking their professional rep.
     - Toggle between public and anonymous profiles.
@@ -52,3 +51,5 @@
     - Connect randomly with someone who also got rejected today.
 22. Failure of the Day Email Digest:
     - Daily email with the funniest fail from the previous day, plus a motivational quote that’s actually demotivational.
+23. **Load Feed in Chunks**: Infinite scroll for a smoother experience.
+24. **Edit Profile**: User can edit their profile with a username, bio, and profile picture.

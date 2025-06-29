@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, AlertCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import toast from "react-hot-toast"
 import Link from "next/link"
 
 export default function LoginPage() {
@@ -15,9 +14,9 @@ export default function LoginPage() {
     email: "",
     password: "",
   })
-  const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const handleInputChange = (e) => {
     setFormData({
@@ -29,7 +28,8 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-    setError(null)
+    setShowError(false)
+    setErrorMessage("")
     const supabase = createClient()
 
     try {
@@ -39,20 +39,20 @@ export default function LoginPage() {
       })
 
       if (error) {
-        setError(error.message)
-        toast.error("Login failed: " + error.message)
+        console.error("Login error:", error)
+        setShowError(true)
+        setErrorMessage(error?.message || "An unexpected error occurred.")
         return // Important to stop the function here
       }
 
-      // 3. More specific check and better redirect pattern
       if (data.user) {
         router.replace("/feed")
         router.refresh() // Ensures layout re-renders with new auth state
       }
     } catch (error) {
       console.error("Login error:", error)
-      setError("An unexpected error occurred. Please try again.")
-      toast.error("An unexpected error occurred. Please try again.")
+      setShowError(true)
+      setErrorMessage("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -68,7 +68,9 @@ export default function LoginPage() {
     })
 
     if (error) {
-      toast.error("Google login failed: " + error.message)
+      console.error("Google login error:", error)
+      setShowError(true)
+      setErrorMessage(error?.message || "An unexpected error occurred.")
       return
     }
 
@@ -175,6 +177,12 @@ export default function LoginPage() {
               <span className="px-4 text-sm text-light-secondary">or</span>
               <div className="flex-grow border-t border-dark-border"></div>
             </div>
+
+            {showError && (
+              <div className="mb-2 text-sm text-red-500 text-center">
+                {errorMessage}
+              </div>
+            )}
 
             {/* 4. Use form's onSubmit handler */}
             <form onSubmit={handleSubmit} className="space-y-4">

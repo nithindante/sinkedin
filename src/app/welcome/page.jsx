@@ -1,11 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Camera, RefreshCw, User, ArrowRight, X } from "lucide-react"
-import Link from "next/link"
-import { redirect, useRouter } from "next/navigation"
+import { Camera, RefreshCw, ArrowRight } from "lucide-react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
-import toast from "react-hot-toast"
 import { createClient } from "@/lib/supabase/client"
 import axios from "axios"
 
@@ -17,6 +15,8 @@ export default function Page() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [avatarFile, setAvatarFile] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   // Generate random usernames for fun
   const randomUsernamesBase = [
@@ -86,19 +86,23 @@ export default function Page() {
 
     // Validate required fields
     if (!username) {
-      toast.error("Username is required")
+      setShowError(true)
+      setErrorMessage("Username is required")
       return
     }
     if (username.length < 3 || username.length > 50) {
-      toast.error("Username must be between 3 and 50 characters")
+      setShowError(true)
+      setErrorMessage("Username must be between 3 and 50 characters")
       return
     }
     if (headline && headline.length > 100) {
-      toast.error("Headline must be less than 100 characters")
+      setShowError(true)
+      setErrorMessage("Headline must be less than 100 characters")
       return
     }
     if (bio && bio.length > 200) {
-      toast.error("Bio must be less than 200 characters")
+      setShowError(true)
+      setErrorMessage("Bio must be less than 200 characters")
       return
     }
 
@@ -111,7 +115,8 @@ export default function Page() {
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      toast.error("You must be logged in to create a profile")
+      setShowError(true)
+      setErrorMessage("You must be logged in to create a profile")
       setLoading(false)
       router.replace("/auth/login")
       return
@@ -125,7 +130,8 @@ export default function Page() {
         !avatarFile.type.startsWith("image/") ||
         avatarFile.size > 5 * 1024 * 1024
       ) {
-        toast.error("Please upload a valid image under 5MB")
+        setShowError(true)
+        setErrorMessage("Please upload a valid image under 5MB")
         setLoading(false)
         return
       }
@@ -137,8 +143,9 @@ export default function Page() {
         .from("avatars")
         .upload(filePath, avatarFile)
       if (uploadError) {
-        toast.error("Failed to upload avatar image")
-        console.error(uploadError)
+        setShowError(true)
+        setErrorMessage("Failed to upload avatar image")
+        console.error("Avatar upload error:", uploadError)
         setLoading(false)
         return
       }
@@ -148,7 +155,8 @@ export default function Page() {
         .getPublicUrl(uploadData.path)
 
       if (!data.publicUrl) {
-        toast.error("Failed to get avatar URL.")
+        setShowError(true)
+        setErrorMessage("Failed to get avatar URL.")
         setLoading(false)
         return
       }
@@ -166,31 +174,36 @@ export default function Page() {
       })
 
       if (response.status === 201) {
-        toast.success("Profile created successfully!")
         // Redirect to the main app or profile page
         router.replace("/feed")
       } else {
-        toast.error("Failed to create profile")
+        setShowError(true)
+        setErrorMessage("Failed to create profile")
       }
     } catch (error) {
       console.error("Error creating profile:", error)
-      toast.error("An error occurred while creating your profile")
+      setShowError(true)
+      setErrorMessage("An error occurred while creating your profile")
     } finally {
       setLoading(false)
     }
   }
 
   const handleSkip = async () => {
-    // console.log("Skipped setup, using defaults")
     // Navigate to main app with default values
     // take default username and send request to create profile
+    setLoading(true)
+    setShowError(false)
+    setErrorMessage("")
     const supabase = createClient()
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser()
     if (userError || !user) {
-      toast.error("You must be logged in to create a profile")
+      setShowError(true)
+      setErrorMessage("You must be logged in to create a profile")
+      setLoading(false)
       router.replace("/auth/login")
       return
     }
@@ -206,14 +219,17 @@ export default function Page() {
         avatar: null, // No avatar for skipped setup
       })
       if (response.status === 201) {
-        toast.success("Profile created with default values!")
         router.replace("/feed") // Assuming this is the main app route
       } else {
-        toast.error("Failed to create profile with default values")
+        setShowError(true)
+        setErrorMessage("Failed to create profile with default values")
       }
     } catch (error) {
       console.error("Error creating default profile:", error)
-      toast.error("An error occurred while creating your default profile")
+      setShowError(true)
+      setErrorMessage("An error occurred while creating your default profile")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -270,6 +286,14 @@ export default function Page() {
               (optional).
             </p>
           </div>
+
+          {/* Error Message */}
+          {showError && (
+            <div className="mb-4 text-red-500">
+              <p className="text-sm">{errorMessage}</p>
+            </div>
+          )}
+
           {/* Username Section */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2 text-light">
@@ -367,8 +391,14 @@ export default function Page() {
               onClick={handleSkip}
               className="px-6 py-3 rounded-lg border font-medium flex items-center justify-center gap-2 hover:opacity-80 transition-opacity border-dark-border text-light-secondary bg-transparent"
             >
-              Skip for Now
-              <X className="w-4 h-4" />
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="loader"></span> Skipping...
+                </span>
+              ) : (
+                "Skip for Now"
+              )}
+              <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>

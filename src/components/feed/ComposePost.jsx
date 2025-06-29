@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import toast from "react-hot-toast"
 import axios from "axios"
-
-// TODO: Adding post should appear instantly in feed without refresh
-// ? mostly will need context or state management solution like Redux or Zustand
 
 export default function ComposePost({ onPostCreated }) {
   const [content, setContent] = useState("")
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const supabase = createClient()
 
@@ -30,7 +28,8 @@ export default function ComposePost({ onPostCreated }) {
 
   const handleAnonymousChange = (e) => {
     if (!isAuthenticated) {
-      toast.error("You must be logged in to post anonymously.")
+      setShowError(true)
+      setErrorMessage("You must be logged in to post anonymously.")
       e.preventDefault() // Prevent checkbox from changing
       return
     }
@@ -39,12 +38,14 @@ export default function ComposePost({ onPostCreated }) {
 
   const handlePostClick = async () => {
     if (!isAuthenticated) {
-      toast.error("You must be logged in to post.")
+      setShowError(true)
+      setErrorMessage("You must be logged in to create a post.")
       return
     }
 
     if (content.trim() === "") {
-      toast.error("Content cannot be empty.")
+      setShowError(true)
+      setErrorMessage("Post content cannot be empty.")
       return
     }
     setIsLoading(true)
@@ -55,7 +56,8 @@ export default function ComposePost({ onPostCreated }) {
       })
       // console.log("Post response:", response.data)
       if (response.status === 201) {
-        toast.success("Post created successfully!")
+        setShowError(false)
+        setErrorMessage("")
         setContent("")
         setIsAnonymous(false)
 
@@ -63,11 +65,13 @@ export default function ComposePost({ onPostCreated }) {
           onPostCreated(response.data.post) // Notify parent component if needed
         }
       } else {
-        toast.error("Failed to create post.")
+        setShowError(true)
+        setErrorMessage("Failed to create post.")
       }
     } catch (error) {
       console.error("Error creating post:", error)
-      toast.error(
+      showError(true)
+      setErrorMessage(
         "Failed to create post. ",
         error.message || "Please try again later."
       )
@@ -90,6 +94,10 @@ export default function ComposePost({ onPostCreated }) {
         disabled={isLoading}
         rows={3}
       ></textarea>
+
+      {showError && (
+        <div className="mt-2 text-sm text-red-500">{errorMessage}</div>
+      )}
       <div className="flex justify-between items-center mt-4">
         <div>
           <label
@@ -116,7 +124,7 @@ export default function ComposePost({ onPostCreated }) {
               : "cursor-not-allowed bg-light-secondary "
           } disabled:bg-light-secondary`}
           onClick={handlePostClick}
-          disabled={!isAuthenticated}
+          disabled={!isAuthenticated || isLoading}
         >
           {isLoading ? "Posting..." : "Post"}
         </button>

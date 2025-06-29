@@ -5,7 +5,6 @@ import { Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import toast from "react-hot-toast"
 import { createClient } from "@/lib/supabase/client"
 
 export default function SignupPage() {
@@ -17,6 +16,9 @@ export default function SignupPage() {
     password: "",
     confirmPassword: "",
   })
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (e) => {
     setFormData({
@@ -30,18 +32,21 @@ export default function SignupPage() {
 
     // Basic validation
     if (!formData.email || !formData.password || !formData.confirmPassword) {
-      toast.error("All fields are required")
+      setShowError(true)
+      setErrorMessage("All fields are required")
       return
     }
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match")
+      setShowError(true)
+      setErrorMessage("Passwords do not match")
       return
     }
     if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters long")
+      setShowError(true)
+      setErrorMessage("Password must be at least 6 characters long")
       return
     }
-
+    setIsLoading(true)
     try {
       const supabase = createClient()
       const {
@@ -53,25 +58,30 @@ export default function SignupPage() {
       })
       if (error) {
         console.error("Supabase signup error:", error)
-        toast.error(error.message || "Failed to create account")
+        setShowError(true)
+        setErrorMessage(error.message || "Failed to create account")
+        setIsLoading(false)
         return
       }
 
       if (user) {
         router.push("/welcome")
       } else {
-        toast.error("Signup failed, please try again")
-        console.error("User object is null or undefined")
+        setShowError(true)
+        setErrorMessage("User object is null or undefined")
+        setIsLoading(false)
         return
       }
     } catch (error) {
       console.error("Signup error:", error)
       if (error.response && error.response.data) {
-        toast.error(error.response.data.error || "Signup failed")
+        setShowError(true)
+        setErrorMessage(error.response.data.error || "Signup failed")
       } else {
-        toast.error("An unexpected error occurred. Please try again.")
+        setShowError(true)
+        setErrorMessage("An unexpected error occurred. Please try again.")
       }
-      return
+      setIsLoading(false)
     }
   }
 
@@ -178,6 +188,12 @@ export default function SignupPage() {
               <div className="flex-grow border-t border-dark-border"></div>
             </div>
 
+            {showError && (
+              <div className="mb-1 text-red-500 text-sm text-center">
+                {errorMessage || "An error occurred. Please try again."}
+              </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
@@ -254,8 +270,9 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   className="w-full bg-accent hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                  disabled={isLoading}
                 >
-                  Join the Disaster
+                  {isLoading ? "Creating Account..." : "Join the Chaos"}
                 </button>
               </div>
             </form>

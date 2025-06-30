@@ -136,11 +136,16 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
             <div className="text-light-secondary text-xs">{timeAgo}</div>
           </div>
 
-          {/* Post Body */}
-          <div className="mt-4 text-base text-light whitespace-pre-wrap">
+          {/* Post Body: Content */}
+          <div className="hidden md:block mt-4 text-base text-light whitespace-pre-wrap">
             {body}
           </div>
         </div>
+      </div>
+
+      {/* Post Body: Content */}
+      <div className="md:hidden ml-3 mt-4 text-base text-light whitespace-pre-wrap">
+        {body}
       </div>
 
       <div>

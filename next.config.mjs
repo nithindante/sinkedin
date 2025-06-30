@@ -3,7 +3,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       new URL(
-        "https://qshaswfrhqefydyetqvq.supabase.co/storage/v1/object/public/avatars/**"
+        "https://pbelkncykqidzqofiyph.supabase.co/storage/v1/object/public/avatars/**"
       ),
     ],
   },

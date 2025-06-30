@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 // --- Main PostCard Component ---
 export default function PostCard({ post, currentUserId, currentUserAvatar }) {
@@ -17,6 +18,21 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
     reaction,
     comments: initialComments,
   } = post
+
+  const supabase = createClient()
+
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false)
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      setIsUserAuthenticated(!!session)
+    }
+
+    checkAuth()
+    // No need to listen to supabase changes here, it's simple enough
+  }, [])
 
   // State for managing comments
   const [comments, setComments] = useState(initialComments || [])
@@ -92,7 +108,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
 
   return (
-    <article className="bg-dark-secondary border border-dark-border rounded-lg p-6">
+    <article className="bg-dark-secondary border border-dark-border rounded-lg px-5 py-6 md:p-6">
       {/* Post Header: Avatar and Author Info */}
       <div className="flex items-start gap-4">
         <Link
@@ -152,6 +168,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
           initialComments={comments}
           currentUserAvatar={currentUserAvatar}
           onCommentPosted={handleCommentPosted}
+          isUserAuthenticated={isUserAuthenticated}
         />
       </div>
     </article>
@@ -164,6 +181,7 @@ function CommentSection({
   initialComments,
   currentUserAvatar,
   onCommentPosted,
+  isUserAuthenticated = false, // Default to false if not provided
 }) {
   const [comments, setComments] = useState(initialComments)
   const [isLoading, setIsLoading] = useState(false)
@@ -225,6 +243,7 @@ function CommentSection({
         currentUserAvatar={currentUserAvatar}
         postId={postId}
         onCommentPosted={onCommentPosted} // Pass handler to AddComment
+        isUserAuthenticated={isUserAuthenticated} // Pass authentication status
       />
 
       {/* Reverse the comments array for display to show newest first */}
@@ -284,12 +303,18 @@ function Comment({ comment }) {
 }
 
 // --- Helper Component: The "Add a comment" input field ---
-function AddComment({ currentUserAvatar, postId, onCommentPosted }) {
+function AddComment({
+  currentUserAvatar,
+  postId,
+  onCommentPosted,
+  isUserAuthenticated,
+}) {
   const [isEditing, setIsEditing] = useState(false)
   const [commentText, setCommentText] = useState("")
   const [isCommentPosting, setIsCommentPosting] = useState(false)
 
   const handlePostComment = async () => {
+    if (!isUserAuthenticated) return
     if (!commentText.trim()) return
     try {
       setIsCommentPosting(true)
@@ -363,8 +388,14 @@ function AddComment({ currentUserAvatar, postId, onCommentPosted }) {
           </button>
           <button
             onClick={handlePostComment}
-            disabled={!commentText.trim()}
-            className="bg-accent text-white border-none px-4 py-1.5 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors disabled:bg-light-secondary/50 disabled:cursor-not-allowed"
+            disabled={
+              !isUserAuthenticated || isCommentPosting || !commentText.trim()
+            }
+            className={`border-none px-4 py-1.5 rounded-md font-semibold text-sm text-white transition-colors ${
+              isUserAuthenticated
+                ? "bg-accent hover:bg-accent-hover cursor-pointer"
+                : "bg-light-secondary/60 cursor-not-allowed"
+            } disabled:opacity-70 disabled:cursor-not-allowed`}
           >
             {isCommentPosting ? "Posting..." : "Post"}
           </button>

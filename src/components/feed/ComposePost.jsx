@@ -81,7 +81,7 @@ export default function ComposePost({ onPostCreated }) {
   }
 
   return (
-    <div className="bg-dark-secondary border border-dark-border rounded-lg p-6">
+    <div className="bg-dark-secondary border border-dark-border rounded-lg p-4 md:p-6">
       <textarea
         className="w-full bg-dark border border-dark-border rounded-lg p-4 text-light text-lg resize-y min-h-[100px] placeholder:text-light-secondary focus:outline-none focus:ring-1 focus:ring-accent"
         placeholder={
@@ -118,7 +118,7 @@ export default function ComposePost({ onPostCreated }) {
           </label>
         </div>
         <button
-          className={`bg-accent text-white border-none px-6 py-[0.7rem] rounded-md font-semibold transition-colors duration-200 hover:bg-accent-hover ${
+          className={`bg-accent text-white border-none px-6 py-[0.4rem] md:py-[0.7rem] rounded-md font-semibold transition-colors duration-200 hover:bg-accent-hover ${
             isAuthenticated
               ? "cursor-pointer hover:bg-accent-hover"
               : "cursor-not-allowed bg-light-secondary "

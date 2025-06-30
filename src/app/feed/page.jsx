@@ -53,7 +53,7 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main className="max-w-[800px] mx-auto my-8 px-6 flex flex-col gap-6">
+      <main className="max-w-[800px] mx-auto my-6 px-5 md:my-8 md:px-6 flex flex-col gap-6">
         <ComposePost onPostCreated={handlePostCreated} />
 
         {/* This section maps over the static data to render the posts.

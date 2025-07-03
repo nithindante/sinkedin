@@ -237,6 +237,7 @@ function CommentSection({
           currentUserAvatar={currentUserAvatar}
           postId={postId}
           onCommentPosted={onCommentPosted} // Pass handler to AddComment
+          isUserAuthenticated={isUserAuthenticated} // Pass authentication status
         />
       </div>
     )

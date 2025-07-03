@@ -59,8 +59,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         {children}
-        <Analytics />
-        <SpeedInsights />
+        {process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true" && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   )

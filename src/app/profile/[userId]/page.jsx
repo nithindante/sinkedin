@@ -149,7 +149,7 @@ export default async function UserProfilePage({ params }) {
               {/* Only show Edit and Logout buttons if it's the user's own profile */}
               {isOwnProfile && (
                 <div className="mt-6">
-                  <EditProfileAndLogout />
+                  <EditProfileAndLogout profile={profile} />
                 </div>
               )}
             </div>

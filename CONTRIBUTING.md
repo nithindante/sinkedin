@@ -25,7 +25,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 The best way to discuss features, ask questions, and connect with the team is through our official Discord server.
 
-[![Join our Discord](https://img.shields.io/discord/YOUR_DISCORD_SERVER_ID?color=7289DA&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/jaD2upCxhB)
+[![Join our Discord](https://img.shields.io/badge/join-5865F2?logo=discord&logoColor=white&label=Join%20our%20Discord)](https://discord.gg/jaD2upCxhB)
 
 ## How Can I Contribute?
 

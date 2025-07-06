@@ -14,7 +14,7 @@ We welcome contributions from the community! If you're interested in helping imp
 
 Join our Discord server to connect with other developers, ask questions, and stay up to date with the project.
 
-[![Join our Discord](https://img.shields.io/discord/YOUR_DISCORD_SERVER_ID?color=7289DA&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/jaD2upCxhB)
+[![Join our Discord](https://img.shields.io/badge/join-5865F2?logo=discord&logoColor=white&label=Join%20our%20Discord)](https://discord.gg/jaD2upCxhB)
 
 # Local Development Setup
 

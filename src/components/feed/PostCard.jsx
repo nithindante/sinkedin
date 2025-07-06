@@ -115,13 +115,13 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
           href={is_anonymous ? "#" : `/profile/${author.id}`}
           className="flex-shrink-0"
         >
-          <div className="w-10 h-10 bg-dark-border rounded-full">
+          <div className="w-10 h-10 bg-dark-border rounded-full overflow-hidden">
             <Image
               src={is_anonymous ? "/anon_panda.jpg" : avatar_url}
               alt="User Avatar"
               width={40}
               height={40}
-              className="rounded-full object-cover"
+              className="w-full h-full object-cover"
             />
           </div>
         </Link>
@@ -293,7 +293,7 @@ function Comment({ comment }) {
         />
       </Link>
       <div className="flex-1 bg-dark px-3 py-2 rounded-lg">
-        <div className="flex items-baseline gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
           <Link
             href={`/profile/${author.id}`}
             className="font-semibold text-light text-sm hover:underline"
@@ -302,7 +302,9 @@ function Comment({ comment }) {
           </Link>
           <span className="text-light-secondary text-xs">{timeAgo}</span>
         </div>
-        <p className="text-light whitespace-pre-wrap mt-1 text-sm">{body}</p>
+        <p className="text-light whitespace-pre-wrap mt-2 sm:mt-1 text-sm">
+          {body}
+        </p>
       </div>
     </div>
   )

@@ -56,9 +56,6 @@ export default function HomePage() {
       <main className="max-w-[800px] mx-auto my-6 px-5 md:my-8 md:px-6 flex flex-col gap-6">
         <ComposePost onPostCreated={handlePostCreated} />
 
-        {/* This section maps over the static data to render the posts.
-            This is where you would map over data fetched from your database. */}
-
         {/* Use the isLoading state to conditionally render skeletons or posts */}
         {isLoading ? (
           <div className="flex flex-col gap-6">
@@ -74,6 +71,7 @@ export default function HomePage() {
                 key={post.id}
                 post={post}
                 currentUserId={currentUser?.id}
+                currentUserAvatar={currentUser?.avatatar_url}
               />
             ))}
           </div>

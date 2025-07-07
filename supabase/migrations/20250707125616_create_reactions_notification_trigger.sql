@@ -15,7 +15,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- The trigger that calls the function after a new reaction is inserted
 CREATE TRIGGER on_new_reaction

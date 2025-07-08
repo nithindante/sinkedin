@@ -3,9 +3,6 @@
 
 BEGIN;
 
--- First, drop the policy if it already exists to make this script re-runnable.
-DROP POLICY IF EXISTS "Users can delete their own avatars" ON storage.objects;
-
 -- Create the policy for the DELETE operation.
 CREATE POLICY "Users can delete their own avatars"
 ON storage.objects FOR DELETE

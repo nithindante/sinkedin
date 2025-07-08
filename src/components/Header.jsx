@@ -1,9 +1,10 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import Image from "next/image"
-import { createClient } from "@/lib/supabase/client"
-import { useEffect, useState } from "react"
+import Link from 'next/link'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import NotificationBell from './notifications/NotificationBell'
 
 export default function Header() {
   // We'll store the full profile info here, including the avatar
@@ -22,13 +23,13 @@ export default function Header() {
       if (user) {
         // 2. If user exists, fetch their profile from the 'profiles' table
         const { data: profileData, error } = await supabase
-          .from("profiles")
-          .select("avatar_url, username")
-          .eq("id", user.id)
+          .from('profiles')
+          .select('avatar_url, username')
+          .eq('id', user.id)
           .single() // We expect only one profile per user
 
         if (error) {
-          console.error("Error fetching profile:", error)
+          console.error('Error fetching profile:', error)
           setProfile(null) // Fallback if profile is missing
         } else {
           setProfile(profileData)
@@ -52,33 +53,37 @@ export default function Header() {
           S<strike className="text-accent no-underline">in</strike>kedIn
         </Link>
 
-        {isLoading ? (
-          <div className="w-[40px] h-[40px] bg-dark-border rounded-full animate-pulse" />
-        ) : profile ? (
-          <Link
-            href="/profile"
-            className="w-[40px] h-[40px] relative"
-            scroll={false}
-          >
-            <Image
-              // Use the fetched avatar_url, with a fallback
-              src={profile.avatar_url || "/default_avatar.jpg"}
-              alt="Profile Icon"
-              fill
-              className="rounded-full object-cover"
-            />
-          </Link>
-        ) : (
-          <Link
-            href="/auth/login"
-            className="text-light no-underline"
-            scroll={false}
-          >
-            <button className="bg-accent text-white border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
-              Login
-            </button>
-          </Link>
-        )}
+        <div className="flex items-center gap-4">
+          {/* We add the bell here. It will only show for logged-in users once we add logic */}
+          {profile && <NotificationBell />}
+
+          {isLoading ? (
+            <div className="w-[40px] h-[40px] bg-dark-border rounded-full animate-pulse" />
+          ) : profile ? (
+            <Link
+              href="/profile"
+              className="w-[40px] h-[40px] relative"
+              scroll={false}
+            >
+              <Image
+                src={profile.avatar_url || '/default_avatar.jpg'}
+                alt="Profile Icon"
+                fill
+                className="rounded-full object-cover"
+              />
+            </Link>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="text-light no-underline"
+              scroll={false}
+            >
+              <button className="bg-accent text-white border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
+                Login
+              </button>
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   )

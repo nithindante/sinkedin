@@ -17,6 +17,7 @@ const getIconForType = (type) => {
 }
 
 export default function NotificationItem({ notification }) {
+  console.log(notification)
   const { type, triggerUser, postLink, time, isRead } = notification
 
   let message

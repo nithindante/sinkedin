@@ -55,7 +55,7 @@ export default function NotificationPanel({ setUnreadCount }) {
           // Use post_id to build the link, or profile link as a fallback
           postLink: n.post_id
             ? `/post/${n.post_id}`
-            : `/profile/${n.triggerUser.username}`,
+            : `/profile/${n.triggerUser.id}`,
           // Format the timestamp into a "time ago" string
           time: formatDistanceToNow(new Date(n.created_at), {
             addSuffix: true,

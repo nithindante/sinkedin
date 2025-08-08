@@ -1,15 +1,30 @@
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 const INITIAL_COMMENT_FETCH_COUNT = 1
+const POSTS_PER_PAGE = 10
 
 // Fetch all posts with username and avatar URL
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1', 10)
+
+    // calculate the range for supabase pagination
+    const limit = POSTS_PER_PAGE
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+    if (isNaN(page) || page < 1) {
+      return NextResponse.json(
+        { error: 'Invalid page number.' },
+        { status: 400 },
+      )
+    }
+
     const supabase = await createClient()
     // TODO: Check if whether neeeds to send user_id in response or not
     const { data: posts, error } = await supabase
-      .from("posts")
+      .from('posts')
       .select(
         `
         id,
@@ -41,16 +56,17 @@ export async function GET() {
             avatar_url
           )
         )
-      `
+      `,
       )
-      .order("created_at", { ascending: false })
-      .order("created_at", { referencedTable: "comments", ascending: false })
-      .limit(INITIAL_COMMENT_FETCH_COUNT, { foreignTable: "comments" })
+      .order('created_at', { ascending: false })
+      .order('created_at', { referencedTable: 'comments', ascending: false })
+      .limit(INITIAL_COMMENT_FETCH_COUNT, { foreignTable: 'comments' })
+      .range(from, to)
     if (error) {
-      console.error("Error fetching posts:", error)
+      console.error('Error fetching posts:', error)
       return NextResponse.json(
-        { error: "Failed to fetch posts." },
-        { status: 500 }
+        { error: 'Failed to fetch posts.' },
+        { status: 500 },
       )
     }
 
@@ -100,12 +116,15 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({ posts: transformedPosts }, { status: 200 })
-  } catch (error) {
-    console.error("Unexpected error:", error)
     return NextResponse.json(
-      { error: "An unexpected error occurred." },
-      { status: 500 }
+      { posts: transformedPosts, hasMore: transformedPosts.length === limit },
+      { status: 200 },
+    )
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return NextResponse.json(
+      { error: 'An unexpected error occurred.' },
+      { status: 500 },
     )
   }
 }
